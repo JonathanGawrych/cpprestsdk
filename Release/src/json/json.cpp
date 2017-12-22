@@ -206,10 +206,10 @@ web::json::value web::json::value::string(utility::string_t value, bool has_esca
             );
 }
 
-#ifdef _WIN32
+#ifdef __UTF16_STRINGS
 web::json::value web::json::value::string(const std::string &value)
 {
-    std::unique_ptr<details::_Value> ptr = utility::details::make_unique<details::_String>(utility::conversions::to_utf16string(value));
+    std::unique_ptr<details::_Value> ptr = utility::details::make_unique<details::_String>(utility::conversions::to_string_t(value));
     return web::json::value(std::move(ptr)
 #ifdef ENABLE_JSON_VALUE_VISUALIZER
             ,value::String

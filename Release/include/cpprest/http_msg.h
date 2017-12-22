@@ -156,7 +156,7 @@ public:
     http_exception(const utility::string_t &whatArg)
         : m_msg(utility::conversions::to_utf8string(whatArg)) {}
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
     /// <summary>
     /// Creates an <c>http_exception</c> with just a string message and no error code.
     /// </summary>
@@ -185,7 +185,7 @@ public:
           m_msg(utility::conversions::to_utf8string(whatArg))
     {}
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
     /// <summary>
     /// Creates an <c>http_exception</c> with from a error code using the current platform error category.
     /// </summary>

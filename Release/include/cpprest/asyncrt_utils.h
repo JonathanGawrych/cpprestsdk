@@ -401,7 +401,7 @@ namespace details
     inline bool str_icmp(const utility::string_t &left, const utility::string_t &right)
     {
 #ifdef _WIN32
-        return _wcsicmp(left.c_str(), right.c_str()) == 0;
+        return u_stricmp(left.c_str(), right.c_str()) == 0;
 #else
         return boost::iequals(left, right);
 #endif

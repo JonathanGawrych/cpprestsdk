@@ -80,16 +80,16 @@ plaintext_string winrt_encryption::decrypt() const
     }
 
     // Construct string and zero out memory from plain text buffer.
-    auto data = plaintext_string(new std::wstring(
-        reinterpret_cast<const std::wstring::value_type *>(rawPlaintext),
-        plaintext->Length / 2));
+    auto data = plaintext_string(new utility::string_t(
+        reinterpret_cast<const utility::string_t::value_type *>(rawPlaintext),
+        plaintext->Length / sizeof(utility::string_t::value_type));
     SecureZeroMemory(rawPlaintext, plaintext->Length);
     return std::move(data);
 }
 
 #else
 
-win32_encryption::win32_encryption(const std::wstring &data) :
+win32_encryption::win32_encryption(const ::utility::string_t &data) :
     m_numCharacters(data.size())
 {
     // Early return because CryptProtectMemory crashs with empty string
@@ -98,7 +98,7 @@ win32_encryption::win32_encryption(const std::wstring &data) :
         return;
     }
 
-    const auto dataNumBytes = data.size() * sizeof(std::wstring::value_type);
+    const auto dataNumBytes = data.size() * sizeof(::utility::string_t::value_type);
     m_buffer.resize(dataNumBytes);
     memcpy_s(m_buffer.data(), m_buffer.size(), data.c_str(), dataNumBytes);
 
@@ -122,12 +122,12 @@ win32_encryption::~win32_encryption()
 plaintext_string win32_encryption::decrypt() const
 {
     if (m_buffer.empty())
-        return plaintext_string(new std::wstring());
+        return plaintext_string(new ::utility::string_t());
 
     // Copy the buffer and decrypt to avoid having to re-encrypt.
-    auto data = plaintext_string(new std::wstring(reinterpret_cast<const std::wstring::value_type *>(m_buffer.data()), m_buffer.size() / 2));
+    auto data = plaintext_string(new ::utility::string_t(reinterpret_cast<const ::utility::string_t::value_type *>(m_buffer.data()), m_buffer.size() / sizeof(std::wstring::value_type)));
     if (!CryptUnprotectMemory(
-        const_cast<std::wstring::value_type *>(data->c_str()),
+        const_cast<::utility::string_t::value_type *>(data->c_str()),
         static_cast<DWORD>(m_buffer.size()),
         CRYPTPROTECTMEMORY_SAME_PROCESS))
     {

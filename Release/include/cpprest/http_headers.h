@@ -69,7 +69,7 @@ public:
         bool operator()(const utility::string_t &str1, const utility::string_t &str2) const
         {
 #ifdef _WIN32
-            return _wcsicmp(str1.c_str(), str2.c_str()) < 0;
+            return u_stricmp(str1.c_str(), str2.c_str()) < 0;
 #else
             return utility::cmp::icmp(str1, str2) < 0;
 #endif

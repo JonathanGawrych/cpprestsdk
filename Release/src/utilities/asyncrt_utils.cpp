@@ -601,7 +601,7 @@ utility::string_t datetime::to_string(date_format format) const
         throw utility::details::create_system_error(GetLastError());
     }
 
-    std::wostringstream outStream;
+    ostringstream_t outStream;
     outStream.imbue(std::locale::classic());
 
     if (format == RFC_1123)
@@ -787,11 +787,15 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
     {
         SYSTEMTIME sysTime = {0};
 
-        std::wstring month(3, L'\0');
-        std::wstring unused(3, L'\0');
+        utility::string_t month(3, U('\0'));
+        utility::string_t unused(3, U('\0'));
 
-        const wchar_t * formatString = L"%3c, %2d %3c %4d %2d:%2d:%2d %3c";
-        auto n = swscanf_s(dateString.c_str(), formatString,
+#ifdef _UTF16_STRINGS
+const utility::char_t* formatString = L"%3lc, %2d %3lc %4d %2d:%2d:%2d %3lc";
+#else
+const utility::char_t* formatString = "%3c, %2d %3c %4d %2d:%2d:%2d %3c";
+#endif
+        auto n = usscanf_s(dateString.c_str(), formatString,
             unused.data(), unused.size(),
             &sysTime.wDay,
             month.data(), month.size(),
@@ -803,8 +807,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
 
         if (n == 8)
         {
-            std::wstring monthnames[12] = {L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
-            auto loc = std::find_if(monthnames, monthnames+12, [&month](const std::wstring& m) { return m == month;});
+            utility::string_t monthnames[12] = {U("Jan"), U("Feb"), U("Mar"), U("Apr"), U("May"), U("Jun"), U("Jul"), U("Aug"), U("Sep"), U("Oct"), U("Nov"), U("Dec")};
+            auto loc = std::find_if(monthnames, monthnames+12, [&month](const utility::string_t& m) { return m == month;});
 
             if (loc != monthnames+12)
             {
@@ -826,8 +830,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
         extract_fractional_second(dateString, input, ufrac_second);
         {
             SYSTEMTIME sysTime = { 0 };
-            const wchar_t * formatString = L"%4d-%2d-%2dT%2d:%2d:%2dZ";
-            auto n = swscanf_s(input.c_str(), formatString,
+            const utility::char_t* formatString = U("%4d-%2d-%2dT%2d:%2d:%2dZ");
+            auto n = usscanf_s(input.c_str(), formatString,
                 &sysTime.wYear,
                 &sysTime.wMonth,
                 &sysTime.wDay,
@@ -847,8 +851,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
             SYSTEMTIME sysTime = {0};
             DWORD date = 0;
 
-            const wchar_t * formatString = L"%8dT%2d:%2d:%2dZ";
-            auto n = swscanf_s(input.c_str(), formatString,
+            const utility::char_t* formatString = U("%8dT%2d:%2d:%2dZ");
+            auto n = usscanf_s(input.c_str(), formatString,
                 &date,
                 &sysTime.wHour,
                 &sysTime.wMinute,
@@ -874,8 +878,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
             sysTime.wSecond = 0;
             sysTime.wMilliseconds = 0;
 
-            const wchar_t * formatString = L"%2d:%2d:%2dZ";
-            auto n = swscanf_s(input.c_str(), formatString,
+            const utility::char_t* formatString = U("%2d:%2d:%2dZ");
+            auto n = usscanf_s(input.c_str(), formatString,
                 &sysTime.wHour,
                 &sysTime.wMinute,
                 &sysTime.wSecond);

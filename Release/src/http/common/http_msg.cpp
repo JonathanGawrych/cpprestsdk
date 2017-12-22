@@ -234,10 +234,10 @@ utility::string_t flatten_http_headers(const http_headers &headers)
 void parse_headers_string(_Inout_z_ utf16char *headersStr, http_headers &headers)
 {
     utf16char *context = nullptr;
-    utf16char *line = wcstok_s(headersStr, CRLF, &context);
+    utf16char *line = wcstok_s(headersStr, L"\r\n", &context);
     while (line != nullptr)
     {
-        const utility::string_t header_line(line);
+        const utility::string_t header_line(to_string_t(line));
         const size_t colonIndex = header_line.find_first_of(_XPLATSTR(":"));
         if (colonIndex != utility::string_t::npos)
         {
@@ -247,7 +247,7 @@ void parse_headers_string(_Inout_z_ utf16char *headersStr, http_headers &headers
             http::details::trim_whitespace(value);
             headers.add(key, value);
         }
-        line = wcstok_s(nullptr, CRLF, &context);
+        line = wcstok_s(nullptr, L"\r\n", &context);
     }
 }
 #endif

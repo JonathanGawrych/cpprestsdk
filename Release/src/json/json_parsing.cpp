@@ -384,19 +384,21 @@ namespace
     {
         return _snprintf_s_l(ptr, n, _TRUNCATE, "%I64u", utility::details::scoped_c_thread_locale::c_locale(), val64);
     }
-
-    static int print_llu(wchar_t* ptr, size_t n, uint64_t val64)
-    {
-        return _snwprintf_s_l(ptr, n, _TRUNCATE, L"%I64u", utility::details::scoped_c_thread_locale::c_locale(), val64);
-    }
     static double anystod(const char* str)
     {
         return _strtod_l(str, nullptr, utility::details::scoped_c_thread_locale::c_locale());
     }
+#ifdef _UTF16_STRINGS
+    static int print_llu(wchar_t* ptr, size_t n, uint64_t val64)
+    {
+        return _snwprintf_s_l(ptr, n, _TRUNCATE, L"%I64u", utility::details::scoped_c_thread_locale::c_locale(), val64);
+    }
+
     static double anystod(const wchar_t* str)
     {
         return _wcstod_l(str, nullptr, utility::details::scoped_c_thread_locale::c_locale());
     }
+#endif
 #else
     static int __attribute__((__unused__)) print_llu(char* ptr, size_t n, unsigned long long val64)
     {
@@ -692,10 +694,13 @@ bool JSON_StringParser<CharType>::CompleteComment(typename JSON_Parser<CharType>
     return true;
 }
 
+#ifdef _UTF16_STRINGS
 void convert_append_unicode_code_unit(JSON_Parser<wchar_t>::Token &token, utf16char value)
 {
     token.string_val.push_back(value);
 }
+#endif
+
 void convert_append_unicode_code_unit(JSON_Parser<char>::Token &token, utf16char value)
 {
     utf16string utf16(reinterpret_cast<utf16char *>(&value), 1);
@@ -1183,7 +1188,7 @@ static web::json::value _parse_stream(utility::istream_t &stream, std::error_cod
     return returnObject;
 }
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
 static web::json::value _parse_narrow_stream(std::istream &stream)
 {
     web::json::details::JSON_StreamParser<char> parser(stream);
@@ -1287,7 +1292,7 @@ web::json::value web::json::value::parse(utility::istream_t &stream, std::error_
     return _parse_stream(stream, error);
 }
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
 web::json::value web::json::value::parse(std::istream& stream)
 {
     return _parse_narrow_stream(stream);

@@ -82,7 +82,7 @@ public:
     {
         http_response &response = m_request->m_response;
         response.set_status_code((http::status_code)dw);
-        response.set_reason_phrase(phrase);
+        response.set_reason_phrase(utility::conversions::to_string_t(phrase));
 
         utf16char *hdrStr = nullptr;
         HRESULT hr = xmlReq->GetAllResponseHeaders(&hdrStr);
@@ -163,7 +163,7 @@ public:
             std::wstring msg(L"IXMLHttpRequest2Callback::OnError: ");
             msg.append(std::to_wstring(hrError));
             msg.append(L": ");
-            msg.append(utility::conversions::to_string_t(utility::details::windows_category().message(hrError)));
+            msg.append(utility::conversions::to_utf16string(utility::details::windows_category().message(hrError)));
             m_request->report_error(hrError, msg);
         }
         else
@@ -392,14 +392,14 @@ protected:
 
         if (!web::http::details::validate_method(msg.method()))
         {
-            request->report_exception(http_exception(L"The method string is invalid."));
+            request->report_exception(http_exception(U("The method string is invalid.")));
             return;
         }
 
         if (msg.method() == http::methods::TRCE)
         {
             // Not supported by WinInet. Generate a more specific exception than what WinInet does.
-            request->report_exception(http_exception(L"TRACE is not supported"));
+            request->report_exception(http_exception(U("TRACE is not supported")));
             return;
         }
 
@@ -407,7 +407,7 @@ protected:
         if (content_length == std::numeric_limits<size_t>::max())
         {
             // IXHR2 does not allow transfer encoding chunked. So the user is expected to set the content length
-            request->report_exception(http_exception(L"Content length is not specified in the http headers"));
+            request->report_exception(http_exception(U("Content length is not specified in the http headers")));
             return;
         }
 
@@ -432,7 +432,7 @@ protected:
         const auto &proxy_cred = proxy.credentials();
         if (!proxy.is_default())
         {
-            request->report_exception(http_exception(L"Only a default proxy server is supported"));
+            request->report_exception(http_exception(U("Only a default proxy server is supported")));
             return;
         }
 
