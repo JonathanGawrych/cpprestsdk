@@ -37,7 +37,7 @@ using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Data;
 using namespace BlackjackClient;
 
-PlayingTable::PlayingTable() : m_dealerResource(L"dealer"), m_alreadyInsured(false), m_client(L"http://localhost:34568/blackjack/")
+PlayingTable::PlayingTable() : m_dealerResource(U("dealer")), m_alreadyInsured(false), m_client(U("http://localhost:34568/blackjack/"))
 {
     InitializeComponent();
 
@@ -110,8 +110,8 @@ void BlackjackClient::PlayingTable::Refresh()
 {
     this->resultLabel->Text = L"Waiting for other players";
 
-    std::wostringstream buf;
-    buf << _tableId << L"?request=refresh&name=" << uri::encode_uri(m_name,uri::components::path);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?request=refresh&name=") << uri::encode_uri(m_name,uri::components::path);
     
     auto request = m_client.request(methods::PUT, buf.str());
 
@@ -137,7 +137,7 @@ void BlackjackClient::PlayingTable::Refresh()
 
 void BlackjackClient::PlayingTable::InterpretResponse(http_response &response)
 {
-    if ( response.headers().content_type() != L"application/json" ) return;
+    if ( response.headers().content_type() != U("application/json") ) return;
 
     this->resultLabel->Text = L"";
 
@@ -249,11 +249,11 @@ void BlackjackClient::PlayingTable::BetButton_Click(Platform::Object^ sender, Wi
     DisableDisconnecting();
     DisableBetting();
 
-    std::wstring betText(betBox->Text->Data());
+    utility::string_t betText(utility::conversions::to_string_t(betBox->Text->Data()));
 
     this->resultLabel->Text = L"Waiting for a response";
 
-    std::wostringstream buf;
+    utility::ostringstream_t buf;
     buf << _tableId << L"?request=bet&amount=" << betText << "&name=" << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::PUT, buf.str());
@@ -289,12 +289,12 @@ void BlackjackClient::PlayingTable::InsuranceButton_Click(Platform::Object^ send
     DisableInsurance();
     m_alreadyInsured = true;
 
-    std::wstring betText(buyInsuranceTextBox->Text->Data());
+    utility::string_t betText(utility::conversions::to_string_t(buyInsuranceTextBox->Text->Data()));
 
     this->resultLabel->Text = L"Waiting for a response";
 
-    std::wostringstream buf;
-    buf << _tableId << L"?request=insure&amount=" << betText << "&name=" << uri::encode_uri(m_name,uri::components::query);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?request=insure&amount=") << betText << U("&name=") << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::PUT, buf.str());
 
@@ -329,8 +329,8 @@ void BlackjackClient::PlayingTable::DoubleButton_Click(Platform::Object^ sender,
 
     this->resultLabel->Text = L"Waiting for a response";
 
-    std::wostringstream buf;
-    buf << _tableId << L"?request=double&name=" << uri::encode_uri(m_name,uri::components::query);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?request=double&name=") << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::PUT, buf.str());
 
@@ -364,8 +364,8 @@ void BlackjackClient::PlayingTable::StayButton_Click(Platform::Object^ sender, W
 
     this->resultLabel->Text = L"Waiting for a response";
 
-    std::wostringstream buf;
-    buf << _tableId << L"?request=stay&name=" << uri::encode_uri(m_name,uri::components::query);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?request=stay&name=") << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::PUT, buf.str());
 
@@ -398,8 +398,8 @@ void BlackjackClient::PlayingTable::HitButton_Click(Platform::Object^ sender, Wi
 
     this->resultLabel->Text = L"Waiting for a response";
 
-    std::wostringstream buf;
-    buf << _tableId << L"?request=hit&name=" << uri::encode_uri(m_name,uri::components::query);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?request=hit&name=") << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::PUT, buf.str());
 
@@ -435,8 +435,8 @@ void BlackjackClient::PlayingTable::ExitButton_Click(Platform::Object^ sender, W
 
         auto ctx = pplx::task_continuation_context::use_current();
 
-        std::wostringstream buf;
-        buf << _tableId << L"?name=" << uri::encode_uri(m_name,uri::components::query);
+        utility::ostringstream_t buf;
+        buf << _tableId << U("?name=") << uri::encode_uri(m_name,uri::components::query);
     
         auto request = m_client.request(methods::DEL, buf.str());
 
@@ -463,7 +463,7 @@ void BlackjackClient::PlayingTable::ExitButton_Click(Platform::Object^ sender, W
 
 void BlackjackClient::PlayingTable::JoinButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    m_name = this->playerName->Text->Data();
+    m_name = utility::conversions::to_string_t(this->playerName->Text->Data());
 
     if ( m_name.size() == 0 ) 
     {
@@ -471,19 +471,19 @@ void BlackjackClient::PlayingTable::JoinButton_Click(Platform::Object^ sender, W
         return;
     }
 
-    _tableId = L"1";
+    _tableId = U("1");
 
     DisableExit();
     DisableConnecting();
 
     this->resultLabel->Text = L"Joining table";
 
-    uri_builder bldr(this->serverAddress->Text->Data());
+    uri_builder bldr(utility::conversions::to_string_t(this->serverAddress->Text->Data()));
     bldr.append_path(m_dealerResource);
     m_client = http_client(bldr.to_string());
 
-    std::wostringstream buf;
-    buf << _tableId << L"?name=" << uri::encode_uri(m_name,uri::components::query);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?name=") << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::POST, buf.str());
 
@@ -510,7 +510,7 @@ void BlackjackClient::PlayingTable::JoinButton_Click(Platform::Object^ sender, W
         {
             InterpretError(exc.error_code().value());
             EnableConnecting(); 
-            _tableId = L"";
+            _tableId = U("");
         }
     }, ctx);
 }
@@ -526,8 +526,8 @@ void BlackjackClient::PlayingTable::LeaveButton_Click(Platform::Object^ sender, 
 
     auto ctx = pplx::task_continuation_context::use_current();
 
-    std::wostringstream buf;
-    buf << _tableId << L"?name=" << uri::encode_uri(m_name,uri::components::query);
+    utility::ostringstream_t buf;
+    buf << _tableId << U("?name=") << uri::encode_uri(m_name,uri::components::query);
     
     auto request = m_client.request(methods::DEL, buf.str());
 
@@ -545,7 +545,7 @@ void BlackjackClient::PlayingTable::LeaveButton_Click(Platform::Object^ sender, 
 
             this->resultLabel->Text = L"Thanks for playing!";
 
-            _tableId = L"";
+            _tableId = U("");
         }
         catch (const http_exception &exc)
         {

@@ -64,7 +64,7 @@ void on_shutdown()
 // BlackJack_Server.exe <port>
 // If port is not specified, will listen on 34568
 //
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
 int wmain(int argc, wchar_t *argv[])
 #else
 int main(int argc, char *argv[])

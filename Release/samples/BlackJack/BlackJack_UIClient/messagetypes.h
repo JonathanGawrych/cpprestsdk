@@ -24,30 +24,30 @@ enum CardValue { CV_None, CV_Ace, CV_Two, CV_Three, CV_Four, CV_Five, CV_Six, CV
 
 enum BJStatus { ST_PlaceBet, ST_Refresh, ST_YourTurn, ST_None };
 
-#define STATE L"state"
-#define BET L"bet"
-#define DOUBLE L"double"
-#define INSURE L"insure"
-#define HIT L"hit"
-#define STAY L"stay"
-#define REFRESH L"refresh"
-#define INSURANCE L"insurance"
-#define RESULT L"result"
-#define NAME L"Name"
-#define BALANCE L"Balance"
-#define HAND L"Hand"
-#define SUIT L"suit"
-#define VALUE L"value"
-#define CARDS L"cards"
-#define CAPACITY L"Capacity"
-#define ID L"Id"
-#define PLAYERS L"Players"
-#define DEALER L"DEALER"
-#define DATA L"Data"
-#define STATUS L"Status"
-#define REQUEST L"request"
-#define AMOUNT L"amount"
-#define QUERY_NAME L"name"
+#define STATE U("state")
+#define BET U("bet")
+#define DOUBLE U("double")
+#define INSURE U("insure")
+#define HIT U("hit")
+#define STAY U("stay")
+#define REFRESH U("refresh")
+#define INSURANCE U("insurance")
+#define RESULT U("result")
+#define NAME U("Name")
+#define BALANCE U("Balance")
+#define HAND U("Hand")
+#define SUIT U("suit")
+#define VALUE U("value")
+#define CARDS U("cards")
+#define CAPACITY U("Capacity")
+#define ID U("Id")
+#define PLAYERS U("Players")
+#define DEALER U("DEALER")
+#define DATA U("Data")
+#define STATUS U("Status")
+#define REQUEST U("request")
+#define AMOUNT U("amount")
+#define QUERY_NAME U("name")
 
 struct Card
 {
@@ -146,12 +146,12 @@ struct BJHand
 
 struct Player
 {
-    std::wstring Name;
+    utility::string_t Name;
     BJHand Hand;
     double Balance;
 
     Player() {}
-    Player(const std::wstring &name) : Name(name), Balance(1000.0) {}
+    Player(const utility::string_t &name) : Name(name), Balance(1000.0) {}
 
 	static Player FromJSON(web::json::value object)
     {

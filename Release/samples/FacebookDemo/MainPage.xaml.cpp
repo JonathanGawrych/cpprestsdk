@@ -59,17 +59,17 @@ void MainPage::AlbumButton_Click_1(Platform::Object^ sender, Windows::UI::Xaml::
 	using namespace pplx;
 	AlbumButton->IsEnabled = false;
 
-	facebook_client::instance().get(L"/me/albums")
+	facebook_client::instance().get(U("/me/albums"))
 	.then([](web::json::value v){
         web::json::object& obj = v.as_object();
         std::vector<FacebookAlbum^> albums;
 
-        for(auto& elem : obj[L"data"].as_array()){
+        for(auto& elem : obj[U("data")].as_array()){
             albums.push_back(ref new FacebookAlbum(
-            	elem[L"name"].as_string(),
-            	elem[L"count"].as_integer(),
-            	elem[L"id"].as_string(),
-            	elem[L"cover_photo"].as_string()
+            	elem[U("name")].as_string(),
+            	elem[U("count")].as_integer(),
+            	elem[U("id")].as_string(),
+            	elem[U("cover_photo")].as_string()
             ));
         }
 
@@ -94,10 +94,10 @@ ImageSource^ FacebookAlbum::Preview::get()
 	if(preview_ == nullptr) {
 		auto preview_uri = facebook_client::instance().base_uri(true);
 
-		preview_uri.append_path(photo_id_);
-		preview_uri.append_path(L"/picture");
+		preview_uri.append_path(utility::conversions::to_string_t(photo_id_));
+		preview_uri.append_path(U("/picture"));
 
-		preview_ = ref new Imaging::BitmapImage(ref new Uri(StringReference(preview_uri.to_string().c_str())));
+		preview_ = ref new Imaging::BitmapImage(ref new Uri(StringReference(utility::conversions::to_utf16string(preview_uri.to_string()).c_str())));
 	}
 
 	return preview_;
