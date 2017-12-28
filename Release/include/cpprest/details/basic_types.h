@@ -95,6 +95,7 @@ typedef utf16stringstream stringstream_t;
 #define ucout std::wcout
 #define ucin std::wcin
 #define ucerr std::wcerr
+#define uto_string std::to_wstring
 #define uprintf wprintf
 #ifdef _WIN32
 #define usscanf_s swscanf_s
@@ -122,6 +123,7 @@ typedef utf8stringstream stringstream_t;
 #define ucout std::cout
 #define ucin std::cin
 #define ucerr std::cerr
+#define uto_string std::to_string
 #define uprintf printf
 #ifdef _WIN32
 #define usscanf_s sscanf_s

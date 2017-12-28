@@ -23,8 +23,8 @@ using namespace Windows::Storage;
 // Placeholder strings for app tokens
 // see blog post at http://aka.ms/FacebookCppRest
 // for information on obtaining these values
-const std::wstring application_id(L"insert your application ID");
-const std::wstring application_token(L"insert your application token");
+const utility::string_t application_id(U("insert your application ID"));
+const utility::string_t application_token(U("insert your application token"));
 
 facebook_client& facebook_client::instance()
 {
@@ -32,14 +32,15 @@ facebook_client& facebook_client::instance()
 	return c;
 }
 
-pplx::task<void> facebook_client::login(std::wstring scopes)
+pplx::task<void> facebook_client::login(utility::string_t scopes)
 {
 	// Look in the Local Settings for previously-stored login credentials
 	auto ls = ApplicationData::Current->LocalSettings->CreateContainer("LoginDetailsCache",
 		ApplicationDataCreateDisposition::Always);
 
 	if(ls->Values->HasKey("facebookToken")) {
-		token_ = dynamic_cast<String^>(ls->Values->Lookup("facebookToken"))->Data();
+		std::wstring token = dynamic_cast<String^>(ls->Values->Lookup("facebookToken"))->Data();
+		token_ = utility::conversions::to_string_t(token);
 	}
 
 	if(!token_.empty()) {
@@ -75,7 +76,7 @@ pplx::task<void> facebook_client::login(std::wstring scopes)
 	return full_login(scopes);
 }
 
-pplx::task<void> facebook_client::full_login(std::wstring scopes) 
+pplx::task<void> facebook_client::full_login(utility::string_t scopes) 
 {
 	// Create uri for OAuth login on Facebook
 	http::uri_builder login_uri(U("https://www.facebook.com/dialog/oauth"));
@@ -97,14 +98,15 @@ pplx::task<void> facebook_client::full_login(std::wstring scopes)
 			auto start = response.find(L"access_token=");
 			start += 13;
 			auto end = response.find('&');
+			std::wstring token = response.substr(start, end-start);
 
-			token_ = response.substr(start, end-start);
+			token_ = utility::conversions::to_string_t(token);
 
 			// Add token to Local Settings for future login attempts
 			auto ls = ApplicationData::Current->LocalSettings->CreateContainer("LoginDetailsCache",
 				ApplicationDataCreateDisposition::Always);
 
-			ls->Values->Insert("facebookToken", ref new String(token_.c_str()));
+			ls->Values->Insert("facebookToken", ref new String(token.c_str()));
 		}
 	});
 }

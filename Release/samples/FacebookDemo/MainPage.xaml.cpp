@@ -47,7 +47,7 @@ void MainPage::LoginButton_Click_1(Platform::Object^ sender, Windows::UI::Xaml::
 {
 	LoginButton->IsEnabled = false; // Disable button to prevent double-login
 
-	facebook_client::instance().login(L"user_photos")
+	facebook_client::instance().login(U("user_photos"))
 	.then([=](){
 		AlbumButton->IsEnabled = true;
 	}, pplx::task_continuation_context::use_current());
@@ -81,7 +81,7 @@ void MainPage::AlbumButton_Click_1(Platform::Object^ sender, Windows::UI::Xaml::
 
 String^ FacebookAlbum::Title::get()
 {
-	return ref new String(title_.c_str());
+	return ref new String(utility::conversions::to_utf16string(title_).c_str());
 }
 
 int FacebookAlbum::Count::get()
@@ -94,7 +94,7 @@ ImageSource^ FacebookAlbum::Preview::get()
 	if(preview_ == nullptr) {
 		auto preview_uri = facebook_client::instance().base_uri(true);
 
-		preview_uri.append_path(utility::conversions::to_string_t(photo_id_));
+		preview_uri.append_path(photo_id_);
 		preview_uri.append_path(U("/picture"));
 
 		preview_ = ref new Imaging::BitmapImage(ref new Uri(StringReference(utility::conversions::to_utf16string(preview_uri.to_string()).c_str())));

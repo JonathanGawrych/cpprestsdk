@@ -160,10 +160,10 @@ public:
     {
         if (m_request->m_exceptionPtr == nullptr)
         {
-            std::wstring msg(L"IXMLHttpRequest2Callback::OnError: ");
-            msg.append(std::to_wstring(hrError));
-            msg.append(L": ");
-            msg.append(utility::conversions::to_utf16string(utility::details::windows_category().message(hrError)));
+            utility::string_t msg(U("IXMLHttpRequest2Callback::OnError: "));
+            msg.append(uto_string(hrError));
+            msg.append(U(": "));
+            msg.append(utility::conversions::to_string_t(utility::details::windows_category().message(hrError)));
             m_request->report_error(hrError, msg);
         }
         else
@@ -420,7 +420,7 @@ protected:
             reinterpret_cast<void**>(winrt_context->m_hRequest.GetAddressOf()));
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to create IXMLHTTPRequest2 instance");
+            request->report_error(hr, U("Failure to create IXMLHTTPRequest2 instance"));
             return;
         }
 
@@ -457,17 +457,17 @@ protected:
             }
 
             hr = winrt_context->m_hRequest->Open(
-                msg.method().c_str(),
-                encoded_resource.c_str(),
+                utility::conversions::to_utf16string(msg.method()).c_str(),
+                utility::conversions::to_utf16string(encoded_resource).c_str(),
                 Make<HttpRequestCallback>(winrt_context).Get(),
-                username.c_str(),
-                password,
-                proxy_username.c_str(),
-                proxy_password);
+                utility::conversions::to_utf16string(username).c_str(),
+                utility::conversions::to_utf16string(utility::string_t(password)).c_str(),
+                utility::conversions::to_utf16string(proxy_username).c_str(),
+                utility::conversions::to_utf16string(utility::string_t(proxy_password)).c_str());
         }
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to open HTTP request");
+            request->report_error(hr, U("Failure to open HTTP request"));
             return;
         }
 
@@ -475,7 +475,7 @@ protected:
         hr = winrt_context->m_hRequest->SetProperty(XHR_PROP_NO_CRED_PROMPT, TRUE);
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to set no credentials prompt property");
+            request->report_error(hr, U("Failure to set no credentials prompt property"));
             return;
         }
 
@@ -485,7 +485,7 @@ protected:
         hr = winrt_context->m_hRequest->SetProperty(XHR_PROP_TIMEOUT, timeout);
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to set HTTP request properties");
+            request->report_error(hr, U("Failure to set HTTP request properties"));
             return;
         }
 
@@ -496,21 +496,23 @@ protected:
         hr = winrt_context->m_hRequest->SetProperty(XHR_PROP_ONDATA_THRESHOLD, XHR_PROP_ONDATA_NEVER);
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to turn off on data threshold");
+            request->report_error(hr, U("Failure to turn off on data threshold"));
         }
 #endif
 
         // Add headers.
         for (const auto &hdr : msg.headers())
         {
-            winrt_context->m_hRequest->SetRequestHeader(hdr.first.c_str(), hdr.second.c_str());
+            winrt_context->m_hRequest->SetRequestHeader(
+				utility::conversions::to_utf16string(hdr.first).c_str(),
+				utility::conversions::to_utf16string(hdr.second).c_str());
         }
 
         // Set response stream.
         hr = winrt_context->m_hRequest->SetCustomResponseStream(Make<IResponseStream>(winrt_context).Get());
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to set HTTP response stream");
+            request->report_error(hr, U("Failure to set HTTP response stream"));
             return;
         }
 
@@ -542,7 +544,7 @@ protected:
 
         if ( FAILED(hr) )
         {
-            request->report_error(hr, L"Failure to send HTTP request");
+            request->report_error(hr, U("Failure to send HTTP request"));
             return;
         }
 

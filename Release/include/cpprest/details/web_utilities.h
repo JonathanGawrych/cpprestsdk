@@ -41,7 +41,7 @@ class winrt_encryption
 {
 public:
     winrt_encryption() {}
-    _ASYNCRTIMP winrt_encryption(const std::wstring &data);
+    _ASYNCRTIMP winrt_encryption(const utility::string_t &data);
     _ASYNCRTIMP plaintext_string decrypt() const;
 private:
     ::pplx::task<Windows::Storage::Streams::IBuffer ^> m_buffer;
@@ -74,7 +74,6 @@ public:
     /// </summary>
     credentials() {}
 
-#if 0
     /// <summary>
     /// Constructs credentials from given user name and password.
     /// </summary>
@@ -84,7 +83,6 @@ public:
         m_username(std::move(username)),
         m_password(password)
     {}
-#endif
 
     /// <summary>
     /// The user name associated with the credentials.

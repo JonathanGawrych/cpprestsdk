@@ -10,6 +10,7 @@
 ****/
 #pragma once
 
+#include "cpprest\details\basic_types.h"
 #include "MainPage.g.h"
 
 namespace FacebookDemo
@@ -35,7 +36,7 @@ namespace FacebookDemo
 	public ref class FacebookAlbum sealed
 	{
 	internal:
-		FacebookAlbum(std::wstring title, int count, std::wstring id, std::wstring photo_id):
+		FacebookAlbum(utility::string_t title, int count, utility::string_t id, utility::string_t photo_id):
 			title_(title), count_(count), id_(id), photo_id_(photo_id) {}
 
 	public:
@@ -52,9 +53,9 @@ namespace FacebookDemo
 		}
 		
 	private:
-		std::wstring id_;
-		std::wstring title_;
-		std::wstring photo_id_;
+		utility::string_t id_;
+		utility::string_t title_;
+		utility::string_t photo_id_;
 		int count_;
 		Windows::UI::Xaml::Media::ImageSource^ preview_;
 	};

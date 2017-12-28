@@ -44,14 +44,14 @@ void winrt_secure_zero_buffer(Windows::Storage::Streams::IBuffer ^buffer)
     }
 }
 
-winrt_encryption::winrt_encryption(const std::wstring &data)
+winrt_encryption::winrt_encryption(const utility::string_t &data)
 {
     auto provider = ref new Windows::Security::Cryptography::DataProtection::DataProtectionProvider(ref new Platform::String(L"Local=user"));
 
     // Create buffer containing plain text password.
     Platform::ArrayReference<unsigned char> arrayref(
-        reinterpret_cast<unsigned char *>(const_cast<std::wstring::value_type *>(data.c_str())),
-        static_cast<unsigned int>(data.size()) * sizeof(std::wstring::value_type));
+        reinterpret_cast<unsigned char *>(const_cast<utility::string_t::value_type *>(data.c_str())),
+        static_cast<unsigned int>(data.size()) * sizeof(utility::string_t::value_type));
     Windows::Storage::Streams::IBuffer ^plaintext = Windows::Security::Cryptography::CryptographicBuffer::CreateFromByteArray(arrayref);
     m_buffer = pplx::create_task(provider->ProtectAsync(plaintext));
     m_buffer.then([plaintext](pplx::task<Windows::Storage::Streams::IBuffer ^>)
@@ -82,7 +82,7 @@ plaintext_string winrt_encryption::decrypt() const
     // Construct string and zero out memory from plain text buffer.
     auto data = plaintext_string(new utility::string_t(
         reinterpret_cast<const utility::string_t::value_type *>(rawPlaintext),
-        plaintext->Length / sizeof(utility::string_t::value_type));
+        plaintext->Length / sizeof(utility::string_t::value_type)));
     SecureZeroMemory(rawPlaintext, plaintext->Length);
     return std::move(data);
 }
