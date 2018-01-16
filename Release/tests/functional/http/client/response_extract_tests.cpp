@@ -359,7 +359,7 @@ TEST_FIXTURE(uri_address, extract_json)
         VERIFY_ARE_EQUAL(utility::string_t(U("null")), rsp.extract_json().get().serialize());
     }
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
     // utf-16le
     auto utf16str = data.serialize();
     rsp = send_request_response(scoped.server(), &client, U("application/json; charset=utf-16le"), utf16str);

@@ -646,5 +646,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
+    system("pause");
+
     return failedTestCount;
 }

@@ -205,11 +205,11 @@ pplx::task<json::value> CasaLens::get_pictures(const utility::string_t& location
 }
 
 // Get the current date
-std::wstring CasaLens::get_date()
+utility::string_t CasaLens::get_date()
 {
     time_t t = time(0);
     struct tm now;
-    std::wostringstream date;
+    utility::ostringstream_t date;
     if (0 == localtime_s(&now, &t))
     {
         date << (now.tm_year + 1900) << '-' 
@@ -310,7 +310,7 @@ pplx::task<json::value> CasaLens::get_movies(const utility::string_t& postal_cod
             std::vector<utility::string_t> movie_list;
             std::vector<pplx::task<json::value>> poster_tasks;
             auto date = get_date();
-            std::wstring year = date.substr(0, date.find(U("-"))); 
+            utility::string_t year = date.substr(0, date.find(U("-")));
 
             for(auto& iter : movie_result[movies_json_key].as_object())
             {
@@ -348,7 +348,7 @@ bool CasaLens::is_number(const std::string& s)
         s.end(), [](char c) { return !std::isdigit(c, std::locale()); }) == s.end();
 }
 
-void CasaLens::fetch_data(http_request message, const std::wstring& postal_code, const std::wstring& location)
+void CasaLens::fetch_data(http_request message, const utility::string_t& postal_code, const utility::string_t& location)
 {
     json::value resp_data;
 
@@ -395,11 +395,11 @@ void CasaLens::fetch_data(http_request message, const std::wstring& postal_code,
 // If string => city name, use bing maps API to obtain the postal code for that city
 // number => postal code, use google maps API to obtain city name (location data) for that postal code.
 // then call fetch_data to query different services, aggregate movie, images, events, weather etc for that city and respond to the request.
-void CasaLens::get_data(http_request message, const std::wstring& input_text)
+void CasaLens::get_data(http_request message, const utility::string_t& input_text)
 {
     if (!is_number(utility::conversions::to_utf8string(input_text)))
     {
-        std::wstring bing_maps_url(casalens_creds::bmaps_url);
+        utility::string_t bing_maps_url(casalens_creds::bmaps_url);
         uri_builder maps_builder;
         maps_builder.append_query(U("locality"), input_text);
         maps_builder.append_query(casalens_creds::bmaps_keyname, casalens_creds::bmaps_key);

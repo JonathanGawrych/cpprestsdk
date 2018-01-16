@@ -44,14 +44,14 @@ void winrt_secure_zero_buffer(Windows::Storage::Streams::IBuffer ^buffer)
     }
 }
 
-winrt_encryption::winrt_encryption(const std::wstring &data)
+winrt_encryption::winrt_encryption(const utility::string_t &data)
 {
     auto provider = ref new Windows::Security::Cryptography::DataProtection::DataProtectionProvider(ref new Platform::String(L"Local=user"));
 
     // Create buffer containing plain text password.
     Platform::ArrayReference<unsigned char> arrayref(
-        reinterpret_cast<unsigned char *>(const_cast<std::wstring::value_type *>(data.c_str())),
-        static_cast<unsigned int>(data.size()) * sizeof(std::wstring::value_type));
+        reinterpret_cast<unsigned char *>(const_cast<utility::string_t::value_type *>(data.c_str())),
+        static_cast<unsigned int>(data.size()) * sizeof(utility::string_t::value_type));
     Windows::Storage::Streams::IBuffer ^plaintext = Windows::Security::Cryptography::CryptographicBuffer::CreateFromByteArray(arrayref);
     m_buffer = pplx::create_task(provider->ProtectAsync(plaintext));
     m_buffer.then([plaintext](pplx::task<Windows::Storage::Streams::IBuffer ^>)
@@ -80,16 +80,16 @@ plaintext_string winrt_encryption::decrypt() const
     }
 
     // Construct string and zero out memory from plain text buffer.
-    auto data = plaintext_string(new std::wstring(
-        reinterpret_cast<const std::wstring::value_type *>(rawPlaintext),
-        plaintext->Length / 2));
+    auto data = plaintext_string(new utility::string_t(
+        reinterpret_cast<const utility::string_t::value_type *>(rawPlaintext),
+        plaintext->Length / sizeof(utility::string_t::value_type)));
     SecureZeroMemory(rawPlaintext, plaintext->Length);
     return std::move(data);
 }
 
 #else
 
-win32_encryption::win32_encryption(const std::wstring &data) :
+win32_encryption::win32_encryption(const ::utility::string_t &data) :
     m_numCharacters(data.size())
 {
     // Early return because CryptProtectMemory crashs with empty string
@@ -98,7 +98,7 @@ win32_encryption::win32_encryption(const std::wstring &data) :
         return;
     }
 
-    const auto dataNumBytes = data.size() * sizeof(std::wstring::value_type);
+    const auto dataNumBytes = data.size() * sizeof(::utility::string_t::value_type);
     m_buffer.resize(dataNumBytes);
     memcpy_s(m_buffer.data(), m_buffer.size(), data.c_str(), dataNumBytes);
 
@@ -122,12 +122,12 @@ win32_encryption::~win32_encryption()
 plaintext_string win32_encryption::decrypt() const
 {
     if (m_buffer.empty())
-        return plaintext_string(new std::wstring());
+        return plaintext_string(new ::utility::string_t());
 
     // Copy the buffer and decrypt to avoid having to re-encrypt.
-    auto data = plaintext_string(new std::wstring(reinterpret_cast<const std::wstring::value_type *>(m_buffer.data()), m_buffer.size() / 2));
+    auto data = plaintext_string(new ::utility::string_t(reinterpret_cast<const ::utility::string_t::value_type *>(m_buffer.data()), m_buffer.size() / sizeof(::utility::string_t::value_type)));
     if (!CryptUnprotectMemory(
-        const_cast<std::wstring::value_type *>(data->c_str()),
+        const_cast<::utility::string_t::value_type *>(data->c_str()),
         static_cast<DWORD>(m_buffer.size()),
         CRYPTPROTECTMEMORY_SAME_PROCESS))
     {
@@ -139,16 +139,20 @@ plaintext_string win32_encryption::decrypt() const
 #endif
 #endif
 
-void zero_memory_deleter::operator()(::utility::string_t *data) const
+template <typename C>
+void zero_memory_deleter<C>::operator()(std::basic_string<C> *data) const
 {
     CASABLANCA_UNREFERENCED_PARAMETER(data);
 #if defined(_WIN32)
     SecureZeroMemory(
-        const_cast<::utility::string_t::value_type *>(data->data()),
-        data->size() * sizeof(::utility::string_t::value_type));
+        const_cast<std::basic_string<C>::value_type *>(data->data()),
+        data->size() * sizeof(std::basic_string<C>::value_type));
     delete data;
 #endif
 }
+template class zero_memory_deleter<utf8string::value_type>;
+template class zero_memory_deleter<utf16string::value_type>;
+
 }
 
 }

@@ -138,19 +138,19 @@ TEST(boundary_chars)
 
 TEST(stream_left_over_chars)
 {
-    std::stringbuf buf;
-    buf.sputn("[false]false", 12);
-    std::istream stream(&buf);
+    stringbuf_t buf;
+    buf.sputn(U("[false]false"), 12);
+    istream_t stream(&buf);
     verify_json_throws(stream);
 }
 
 // Test using Windows only API.
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
 TEST(wstream_left_over_chars)
 {
-    std::wstringbuf buf;
-    buf.sputn(L"[false]false", 12);
-    std::wistream stream(&buf);
+    utf8stringbuf buf;
+    buf.sputn("[false]false", 12);
+    utf8istream stream(&buf);
     verify_json_throws(stream);
 }
 #endif

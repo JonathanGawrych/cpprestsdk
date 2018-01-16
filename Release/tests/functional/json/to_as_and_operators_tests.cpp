@@ -492,17 +492,9 @@ TEST(floating_number_serialize)
     // #digits + 2 to avoid loss + 1 for the sign + 1 for decimal point + 5 for exponent (e+xxx)
     const auto len = std::numeric_limits<double>::digits10 + 9;
 
-    // Check narrow string implementation
-    std::stringstream ss;
+    stringstream_t ss;
     value.serialize(ss);
     VERIFY_ARE_EQUAL(len, ss.str().length());
-
-#ifdef _WIN32
-    // Check wide string implementation
-    std::basic_stringstream<wchar_t> wss;
-    value.serialize(wss);
-    VERIFY_ARE_EQUAL(len, wss.str().length());
-#endif
 }
 
 } // SUITE(to_as_and_operators_tests)

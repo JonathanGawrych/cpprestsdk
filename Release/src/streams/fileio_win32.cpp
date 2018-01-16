@@ -230,7 +230,7 @@ bool __cdecl _open_fsb_str(_In_ _filestream_callback *callback, const utility::c
     _ASSERTE(callback != nullptr);
     _ASSERTE(filename != nullptr);
 
-    std::wstring name(filename);
+    std::wstring name(conversions::to_utf16string(filename));
 
     pplx::create_task([=]()
     {

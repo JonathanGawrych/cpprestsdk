@@ -48,13 +48,13 @@ namespace BlackjackClient
 
         http_client m_client;
 
-        std::wstring _tableId;
+        utility::string_t _tableId;
 
         bool m_alreadyInsured;
         
-        std::wstring m_dealerResource;
+        utility::string_t m_dealerResource;
 
-        std::wstring m_name;
+        utility::string_t m_name;
 
         pplx::cancellation_token_source _cancellationTokenSource;
 

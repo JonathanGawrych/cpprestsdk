@@ -17,7 +17,7 @@
 #include "../BlackJack_Server/messagetypes.h"
 
 #ifdef _WIN32
-# define iequals(x, y) (_stricmp((x), (y))==0)
+# define iequals(x, y) (u_stricmp((x), (y))==0)
 #else
 # define iequals(x, y) boost::iequals((x), (y))
 #endif
@@ -139,11 +139,7 @@ void PrintTable(const http_response &response, bool &refresh)
 // Arguments: BlackJack_Client.exe <port>
 // If port is not specified, client will assume that the server is listening on port 34568
 //
-#ifdef _WIN32
-int wmain(int argc, wchar_t *argv[])
-#else
-int main(int argc, char *argv[])
-#endif
+int umain(int argc, char_t *argv[])
 {
     utility::string_t port = U("34568");
     if(argc == 2)
@@ -175,11 +171,11 @@ int main(int argc, char *argv[])
             PrintTable(CheckResponse("blackjack/dealer", bjDealer.request(methods::PUT, buf.str()).get()), was_refresh);
         }
 
-        std::string method;
+        utility::string_t method;
         ucout << "Enter method:";
-        cin >> method;
+        ucin >> method;
 
-        if ( iequals(method.c_str(), "quit") )
+        if ( iequals(method.c_str(), U("quit")) )
         {
             if ( !userName.empty() && !table.empty() )
             {
@@ -190,12 +186,12 @@ int main(int argc, char *argv[])
             break;
         }
 
-        if ( iequals(method.c_str(), "name") )
+        if ( iequals(method.c_str(), U("name")) )
         {
             ucout << "Enter user name:";
             ucin >> userName;
         }
-        else if ( iequals(method.c_str(), "join") )
+        else if ( iequals(method.c_str(), U("join")) )
         {
             ucout << "Enter table name:";
             ucin >> table;
@@ -206,16 +202,16 @@ int main(int argc, char *argv[])
             buf << table << U("?name=") << userName;
             CheckResponse("blackjack/dealer", bjDealer.request(methods::POST, buf.str()).get(), was_refresh);
         }
-        else if ( iequals(method.c_str(), "hit")
-            || iequals(method.c_str(), "stay")
-            || iequals(method.c_str(), "double") )
+        else if ( iequals(method.c_str(), U("hit"))
+            || iequals(method.c_str(), U("stay"))
+            || iequals(method.c_str(), U("double")) )
         {
             utility::ostringstream_t buf;
-            buf << table << U("?request=") << utility::conversions::to_string_t(method) << U("&name=") << userName;
+            buf << table << U("?request=") << method << U("&name=") << userName;
             PrintTable(CheckResponse("blackjack/dealer", bjDealer.request(methods::PUT, buf.str()).get()), was_refresh);
         }
-        else if ( iequals(method.c_str(), "bet") 
-            || iequals(method.c_str(), "insure") )
+        else if ( iequals(method.c_str(), U("bet")) 
+            || iequals(method.c_str(), U("insure")) )
         {
             utility::string_t bet;
             ucout << "Enter bet:";
@@ -224,14 +220,14 @@ int main(int argc, char *argv[])
             if ( userName.empty() ) { ucout << "Must have a name first!\n"; continue; }
 
             utility::ostringstream_t buf;
-            buf << table << U("?request=") << utility::conversions::to_string_t(method) << U("&name=") << userName << U("&amount=") << bet;
+            buf << table << U("?request=") << method << U("&name=") << userName << U("&amount=") << bet;
             PrintTable(CheckResponse("blackjack/dealer", bjDealer.request(methods::PUT, buf.str()).get()), was_refresh);
         }
-        else if ( iequals(method.c_str(), "newtbl") )
+        else if ( iequals(method.c_str(), U("newtbl")) )
         {
             CheckResponse("blackjack/dealer", bjDealer.request(methods::POST).get(), was_refresh);
         }
-        else if ( iequals(method.c_str(), "leave") )
+        else if ( iequals(method.c_str(), U("leave")) )
         {
             ucout << "Enter table:";
             ucin >> table;
@@ -242,7 +238,7 @@ int main(int argc, char *argv[])
             buf << table << U("?name=") << userName;
             CheckResponse("blackjack/dealer", bjDealer.request(methods::DEL, buf.str()).get(), was_refresh);
         }
-        else if ( iequals(method.c_str(), "list") )
+        else if ( iequals(method.c_str(), U("list")) )
         {
             was_refresh = false;
             http_response response = CheckResponse("blackjack/dealer", bjDealer.request(methods::GET).get());

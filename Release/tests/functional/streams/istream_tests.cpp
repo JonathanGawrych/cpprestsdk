@@ -73,7 +73,7 @@ void fill_file_with_lines(const utility::string_t &name, const std::string &end,
 void fill_file_w(const utility::string_t &name, size_t repetitions = 1)
 {
     FILE *stream = nullptr;
-    _wfopen_s(&stream, get_full_name(name).c_str(), L"w");
+    ufopen_s(&stream, get_full_name(name).c_str(), U("w"));
     if(stream == nullptr)
     {
         VERIFY_IS_TRUE(false, "FILE pointer is null");
@@ -835,8 +835,8 @@ TEST(istream_extract_wstring_1)
     utility::string_t str1 = is.extract<utility::string_t>().get();
     utility::string_t str2 = is.extract<utility::string_t>().get();
 
-    VERIFY_ARE_EQUAL(str1, L"abc");
-    VERIFY_ARE_EQUAL(str2, L"defgsf");
+    VERIFY_ARE_EQUAL(str1, U("abc"));
+    VERIFY_ARE_EQUAL(str2, U("defgsf"));
 }
 
 TEST(istream_extract_wstring_2) // On Linux, this becomes the exact copy of istream_extract_string2, hence disabled
@@ -852,8 +852,8 @@ TEST(istream_extract_wstring_2) // On Linux, this becomes the exact copy of istr
     utility::string_t str1 = is.extract<utility::string_t>().get();
     utility::string_t str2 = is.extract<utility::string_t>().get();
 
-    VERIFY_ARE_EQUAL(str1, L"abc");
-    VERIFY_ARE_EQUAL(str2, L"defgsf");
+    VERIFY_ARE_EQUAL(str1, U("abc"));
+    VERIFY_ARE_EQUAL(str2, U("defgsf"));
 }
 
 TEST(istream_extract_wstring_3)
@@ -869,8 +869,8 @@ TEST(istream_extract_wstring_3)
     utility::string_t str1 = is.extract<utility::string_t>().get();
     utility::string_t str2 = is.extract<utility::string_t>().get();
 
-    VERIFY_ARE_EQUAL(str1, L"abc");
-    VERIFY_ARE_EQUAL(str2, L"defgsf");
+    VERIFY_ARE_EQUAL(str1, U("abc"));
+    VERIFY_ARE_EQUAL(str2, U("defgsf"));
 }
 
 #endif

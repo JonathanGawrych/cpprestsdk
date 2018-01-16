@@ -164,8 +164,7 @@ static std::map<utility::string_t, utility::string_t> parse_headers(utility::ist
         tests::functional::http::utilities::trim_whitespace(header_value);
         headers[header_name] = header_value;
 
-        char c1 = (char)ss.get(), c2 = (char)ss.get();
-        if(c1 == '\r' && c2 == '\n')
+        if(ss.get() == U('\r') && ss.get() == U('\n'))
         {
             break;
         }

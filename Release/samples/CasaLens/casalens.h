@@ -81,10 +81,10 @@ private:
 
     // Utility functions
     bool is_number(const std::string& s);
-    std::wstring get_date();
+    utility::string_t get_date();
 
-    void fetch_data(web::http::http_request message, const std::wstring& postal_code, const std::wstring& location);
-    void get_data(web::http::http_request message, const std::wstring& location);
+    void fetch_data(web::http::http_request message, const utility::string_t& postal_code, const utility::string_t& location);
+    void get_data(web::http::http_request message, const utility::string_t& location);
 
     static const int num_events = 5;
     static const int num_images = 5;

@@ -702,21 +702,19 @@ TEST(parse_overload_success)
     error_code_helper(arrayStringStream);
     error_code_helper(objStringStream);
 
-#ifdef _WIN32
-    std::wstringbuf buf;
+    stringbuf_t buf;
 
     buf.sputn(valueStr.c_str(), valueStr.size());
-    std::wistream valStream(&buf);
+    istream_t valStream(&buf);
     error_code_helper(valStream);
 
     buf.sputn(arrStr.c_str(), arrStr.size());
-    std::wistream arrStream(&buf);
+    istream_t arrStream(&buf);
     error_code_helper(arrStream);
 
     buf.sputn(objStr.c_str(), objStr.size());
-    std::wistream objStream(&buf);
+    istream_t objStream(&buf);
     error_code_helper(objStream);
-#endif
 }
 
 TEST(parse_overload_failed)
@@ -736,14 +734,12 @@ TEST(parse_overload_failed)
     VERIFY_IS_TRUE(streamErr.value() > 0);
     VERIFY_IS_TRUE(parsedObject.is_null());
 
-#ifdef _WIN32
-    std::wstringbuf buf;
+    stringbuf_t buf;
     buf.sputn(str.c_str(), str.size());
-    std::wistream iStream(&buf);
+    istream_t iStream(&buf);
     parsedObject = json::value::parse(str, iStreamErr);
     VERIFY_IS_TRUE(iStreamErr.value() > 0);
     VERIFY_IS_TRUE(parsedObject.is_null());
-#endif
 }
 
 } // SUITE(parsing_tests)

@@ -49,7 +49,7 @@ void PlayerSpace::_init()
 
 void PlayerSpace::Update(Player player)
 {
-    playerName->Text = ref new Platform::String(web::uri::decode(player.Name).c_str());
+    playerName->Text = ref new Platform::String(utility::conversions::to_utf16string(web::uri::decode(player.Name)).c_str());
     playerBalance->Text = "$" + player.Balance.ToString();
     playerBet->Text = "Bet: $" + player.Hand.bet.ToString();
     playerInsurance->Text = (player.Hand.insurance > 0) ? "Ins: $" + player.Hand.insurance.ToString() : "";

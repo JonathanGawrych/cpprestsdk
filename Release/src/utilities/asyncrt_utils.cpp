@@ -26,6 +26,7 @@
 #endif
 
 using namespace web;
+using namespace web::details;
 using namespace utility;
 using namespace utility::conversions;
 
@@ -338,13 +339,8 @@ inline size_t count_utf8_to_utf16(const std::string& s)
     return result;
 }
 
-utf16string __cdecl conversions::utf8_to_utf16(const std::string &s)
+static void utf8_to_utf16(const std::string::value_type* const srcData, const size_t srcSize, utf16string::value_type* const destData)
 {
-    // Save repeated heap allocations, use the length of resulting sequence.
-    const size_t srcSize = s.size();
-    const std::string::value_type* const srcData = &s[0];
-    utf16string dest(count_utf8_to_utf16(s), L'\0');
-    utf16string::value_type* const destData = &dest[0];
     size_t destIndex = 0;
     
     for (size_t index = 0; index < srcSize; ++index)
@@ -395,9 +391,33 @@ utf16string __cdecl conversions::utf8_to_utf16(const std::string &s)
             destData[destIndex++] = static_cast<utf16string::value_type>(src);
         }
     }
+}
+
+utf16string __cdecl conversions::utf8_to_utf16(const std::string &s)
+{
+    // Save repeated heap allocations, use the length of resulting sequence.
+    const size_t srcSize = s.size();
+    const std::string::value_type* const srcData = &s[0];
+    utf16string dest(count_utf8_to_utf16(s), L'\0');
+    utf16string::value_type* const destData = &dest[0];
+
+    ::utf8_to_utf16(srcData, srcSize, destData);
+
     return dest;
 }
 
+plaintext_string_utf16 __cdecl conversions::to_utf16string(const plaintext_string_utf8& s)
+{
+    // Save repeated heap allocations, use the length of resulting sequence.
+    const size_t srcSize = s->size();
+    const plaintext_string_utf8::element_type::value_type* const srcData = &(*s)[0];
+    plaintext_string_utf16 dest(new plaintext_string_utf16::element_type(count_utf8_to_utf16(*s), L'\0'));
+    plaintext_string_utf16::element_type::value_type* const destData = &(*dest)[0];
+
+    ::utf8_to_utf16(srcData, srcSize, destData);
+
+    return dest;
+}
 
 inline size_t count_utf16_to_utf8(const utf16string &w)
 {
@@ -440,12 +460,8 @@ inline size_t count_utf16_to_utf8(const utf16string &w)
     return destSize;
 }
 
-std::string __cdecl conversions::utf16_to_utf8(const utf16string &w)
+static void utf16_to_utf8(const utf16string::value_type* const srcData, const size_t srcSize, std::string::value_type* const destData)
 {
-    const size_t srcSize = w.size();
-    const utf16string::value_type* const srcData = &w[0];
-    std::string dest(count_utf16_to_utf8(w), '\0');
-    std::string::value_type* const destData = &dest[0];
     size_t destIndex(0);
 
     for (size_t index = 0; index < srcSize; ++index)
@@ -492,6 +508,28 @@ std::string __cdecl conversions::utf16_to_utf8(const utf16string &w)
             destData[destIndex++] = static_cast<char>((src & LOW_6BITS) | BIT8);        // trailing 6 bits
         }
     }
+}
+
+std::string __cdecl conversions::utf16_to_utf8(const utf16string &w)
+{
+    const size_t srcSize = w.size();
+    const utf16string::value_type* const srcData = &w[0];
+    std::string dest(count_utf16_to_utf8(w), '\0');
+    std::string::value_type* const destData = &dest[0];
+
+    ::utf16_to_utf8(srcData, srcSize, destData);
+
+    return dest;
+}
+
+plaintext_string_utf8 __cdecl conversions::to_utf8string(const plaintext_string_utf16& w)
+{
+    const size_t srcSize = w->size();
+    const plaintext_string_utf16::element_type::value_type* const srcData = &(*w)[0];
+    plaintext_string_utf8 dest(new plaintext_string_utf8::element_type(count_utf16_to_utf8(*w), '\0'));
+    plaintext_string_utf8::element_type::value_type* const destData = &(*dest)[0];
+
+    ::utf16_to_utf8(srcData, srcSize, destData);
 
     return dest;
 }
@@ -601,7 +639,7 @@ utility::string_t datetime::to_string(date_format format) const
         throw utility::details::create_system_error(GetLastError());
     }
 
-    std::wostringstream outStream;
+    utf16ostringstream outStream;
     outStream.imbue(std::locale::classic());
 
     if (format == RFC_1123)
@@ -674,7 +712,7 @@ utility::string_t datetime::to_string(date_format format) const
         outStream << "Z";
     }
 
-    return outStream.str();
+    return utility::conversions::to_string_t(outStream.str());
 #else //LINUX
     uint64_t input = m_interval;
     uint64_t frac_sec = input % _secondTicks;
@@ -787,11 +825,11 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
     {
         SYSTEMTIME sysTime = {0};
 
-        std::wstring month(3, L'\0');
-        std::wstring unused(3, L'\0');
+        utility::string_t month(3, U('\0'));
+        utility::string_t unused(3, U('\0'));
 
-        const wchar_t * formatString = L"%3c, %2d %3c %4d %2d:%2d:%2d %3c";
-        auto n = swscanf_s(dateString.c_str(), formatString,
+        const utility::char_t* formatString = U("%3c, %2d %3c %4d %2d:%2d:%2d %3c");
+        auto n = usscanf_s(dateString.c_str(), formatString,
             unused.data(), unused.size(),
             &sysTime.wDay,
             month.data(), month.size(),
@@ -803,8 +841,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
 
         if (n == 8)
         {
-            std::wstring monthnames[12] = {L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun", L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec"};
-            auto loc = std::find_if(monthnames, monthnames+12, [&month](const std::wstring& m) { return m == month;});
+            utility::string_t monthnames[12] = {U("Jan"), U("Feb"), U("Mar"), U("Apr"), U("May"), U("Jun"), U("Jul"), U("Aug"), U("Sep"), U("Oct"), U("Nov"), U("Dec")};
+            auto loc = std::find_if(monthnames, monthnames+12, [&month](const utility::string_t& m) { return m == month;});
 
             if (loc != monthnames+12)
             {
@@ -826,8 +864,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
         extract_fractional_second(dateString, input, ufrac_second);
         {
             SYSTEMTIME sysTime = { 0 };
-            const wchar_t * formatString = L"%4d-%2d-%2dT%2d:%2d:%2dZ";
-            auto n = swscanf_s(input.c_str(), formatString,
+            const utility::char_t* formatString = U("%4d-%2d-%2dT%2d:%2d:%2dZ");
+            auto n = usscanf_s(input.c_str(), formatString,
                 &sysTime.wYear,
                 &sysTime.wMonth,
                 &sysTime.wDay,
@@ -847,8 +885,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
             SYSTEMTIME sysTime = {0};
             DWORD date = 0;
 
-            const wchar_t * formatString = L"%8dT%2d:%2d:%2dZ";
-            auto n = swscanf_s(input.c_str(), formatString,
+            const utility::char_t* formatString = U("%8dT%2d:%2d:%2dZ");
+            auto n = usscanf_s(input.c_str(), formatString,
                 &date,
                 &sysTime.wHour,
                 &sysTime.wMinute,
@@ -874,8 +912,8 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
             sysTime.wSecond = 0;
             sysTime.wMilliseconds = 0;
 
-            const wchar_t * formatString = L"%2d:%2d:%2dZ";
-            auto n = swscanf_s(input.c_str(), formatString,
+            const utility::char_t* formatString = U("%2d:%2d:%2dZ");
+            auto n = usscanf_s(input.c_str(), formatString,
                 &sysTime.wHour,
                 &sysTime.wMinute,
                 &sysTime.wSecond);
@@ -1067,20 +1105,20 @@ utility::seconds __cdecl timespan::xml_duration_to_seconds(const utility::string
 
         while (is_digit((utility::char_t)c))
         {
-            val = val * 10 + (c - L'0');
+            val = val * 10 + (c - U('0'));
             c = is.get();
 
-            if (c == '.')
+            if (c == U('.'))
             {
                 // decimal point is not handled
                 do { c = is.get(); } while(is_digit((utility::char_t)c));
             }
         }
 
-        if (c == L'D') numSecs += val * 24 * 3600; // days
-        if (c == L'H') numSecs += val * 3600; // Hours
-        if (c == L'M') numSecs += val * 60; // Minutes
-        if (c == L'S' || c == eof)
+        if (c == U('D')) numSecs += val * 24 * 3600; // days
+        if (c == U('H')) numSecs += val * 3600; // Hours
+        if (c == U('M')) numSecs += val * 60; // Minutes
+        if (c == U('S') || c == eof)
         {
             numSecs += val; // seconds
             break;

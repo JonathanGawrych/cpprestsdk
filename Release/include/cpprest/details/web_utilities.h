@@ -10,7 +10,7 @@
 ****/
 #pragma once
 
-#include "cpprest/asyncrt_utils.h"
+#include "cpprest/base_uri.h"
 
 namespace web
 {
@@ -28,12 +28,15 @@ class wspp_callback_client;
 namespace details
 {
 
+template <typename C>
 class zero_memory_deleter
 {
 public:
-    _ASYNCRTIMP void operator()(::utility::string_t *data) const;
+    _ASYNCRTIMP void operator()(std::basic_string<C> *data) const;
 };
-typedef std::unique_ptr<::utility::string_t, zero_memory_deleter> plaintext_string;
+typedef std::unique_ptr<utf8string, zero_memory_deleter<utf8string::value_type>> plaintext_string_utf8;
+typedef std::unique_ptr<utf16string, zero_memory_deleter<utf16string::value_type>> plaintext_string_utf16;
+typedef std::unique_ptr<::utility::string_t, zero_memory_deleter<::utility::string_t::value_type>> plaintext_string;
 
 #if defined(_WIN32) && !defined(CPPREST_TARGET_XP)
 #if defined(__cplusplus_winrt)
@@ -41,7 +44,7 @@ class winrt_encryption
 {
 public:
     winrt_encryption() {}
-    _ASYNCRTIMP winrt_encryption(const std::wstring &data);
+    _ASYNCRTIMP winrt_encryption(const ::utility::string_t &data);
     _ASYNCRTIMP plaintext_string decrypt() const;
 private:
     ::pplx::task<Windows::Storage::Streams::IBuffer ^> m_buffer;
@@ -51,7 +54,7 @@ class win32_encryption
 {
 public:
     win32_encryption() {}
-    _ASYNCRTIMP win32_encryption(const std::wstring &data);
+    _ASYNCRTIMP win32_encryption(const ::utility::string_t &data);
     _ASYNCRTIMP ~win32_encryption();
     _ASYNCRTIMP plaintext_string decrypt() const;
 private:

@@ -63,7 +63,7 @@ void request_context::report_error(unsigned long error_code, const std::string &
     report_exception(http_exception(static_cast<int>(error_code), errorMessage));
 }
 
-#if defined(_WIN32)
+#ifdef _UTF16_STRINGS
 void request_context::report_error(unsigned long error_code, const std::wstring &errorMessage)
 {
     report_exception(http_exception(static_cast<int>(error_code), errorMessage));

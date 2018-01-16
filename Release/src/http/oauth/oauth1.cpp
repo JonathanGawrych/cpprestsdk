@@ -59,8 +59,8 @@ std::vector<unsigned char> oauth1_config::_hmac_sha1(const utility::string_t& ke
     DWORD hash_len = 0;
     ULONG result_len = 0;
 
-    const auto &key_c = conversions::utf16_to_utf8(key);
-    const auto &data_c = conversions::utf16_to_utf8(data);
+    const auto &key_c = conversions::to_utf8string(key);
+    const auto &data_c = conversions::to_utf8string(data);
 
     status = BCryptOpenAlgorithmProvider(&alg_handle, BCRYPT_SHA1_ALGORITHM, nullptr, BCRYPT_ALG_HANDLE_HMAC_FLAG);
     if (!NT_SUCCESS(status))
@@ -112,8 +112,8 @@ using namespace Windows::Storage::Streams;
 
 std::vector<unsigned char> oauth1_config::_hmac_sha1(const utility::string_t& key, const utility::string_t& data)
 {
-    Platform::String^ data_str = ref new Platform::String(data.c_str());
-    Platform::String^ key_str = ref new Platform::String(key.c_str());
+    Platform::String^ data_str = ref new Platform::String(utility::conversions::to_utf16string(data).c_str());
+    Platform::String^ key_str = ref new Platform::String(utility::conversions::to_utf16string(key).c_str());
 
     MacAlgorithmProvider^ HMACSha1Provider = MacAlgorithmProvider::OpenAlgorithm(MacAlgorithmNames::HmacSha1);
     IBuffer^ content_buffer = CryptographicBuffer::ConvertStringToBinary(data_str, BinaryStringEncoding::Utf8);
@@ -158,7 +158,7 @@ utility::string_t oauth1_config::_build_base_string_uri(const uri& u)
     os << u.scheme() << "://" << u.host();
     if (!u.is_port_default() && u.port() != 80 && u.port() != 443)
     {
-        os << ":" << u.port();
+        os << U(":") << u.port();
     }
     os << u.path();
     return uri::encode_data_string(os.str());
@@ -174,7 +174,7 @@ utility::string_t oauth1_config::_build_normalized_parameters(web::http::uri u, 
     {
         utility::ostringstream_t os;
         os.imbue(std::locale::classic());
-        os << query.first << "=" << query.second;
+        os << query.first << U("=") << query.second;
         queries.push_back(os.str());
     }
 
@@ -182,7 +182,7 @@ utility::string_t oauth1_config::_build_normalized_parameters(web::http::uri u, 
     {
         utility::ostringstream_t os;
         os.imbue(std::locale::classic());
-        os << query.first << "=" << query.second;
+        os << query.first << U("=") << query.second;
         queries.push_back(os.str());
     }
 
@@ -225,7 +225,7 @@ utility::string_t oauth1_config::_build_signature_base_string(http_request reque
     utility::ostringstream_t os;
     os.imbue(std::locale::classic());
     os << request.method();
-    os << "&" << _build_base_string_uri(u);
+    os << U("&") << _build_base_string_uri(u);
 
 	// http://oauth.net/core/1.0a/#signing_process
 	// 9.1.1.  Normalize Request Parameters
@@ -239,11 +239,11 @@ utility::string_t oauth1_config::_build_signature_base_string(http_request reque
         utility::string_t str = request.extract_string(true).get();
         request.set_body(str, web::http::details::mime_types::application_x_www_form_urlencoded);
         uri v = http::uri_builder(request.absolute_uri()).append_query(std::move(str), false).to_uri();
-        os << "&" << _build_normalized_parameters(std::move(v), std::move(state));
+        os << U("&") << _build_normalized_parameters(std::move(v), std::move(state));
     }
     else
     {
-        os << "&" << _build_normalized_parameters(std::move(u), std::move(state));
+        os << U("&") << _build_normalized_parameters(std::move(u), std::move(state));
     }
     return os.str();
 }
@@ -325,26 +325,26 @@ void oauth1_config::_authenticate_request(http_request &request, oauth1_state st
 {
     utility::ostringstream_t os;
     os.imbue(std::locale::classic());
-    os << "OAuth ";
+    os << U("OAuth ");
     if (!realm().empty())
     {
-        os << oauth1_strings::realm << "=\"" << web::uri::encode_data_string (realm()) << "\", ";
+        os << oauth1_strings::realm << U("=\"") << web::uri::encode_data_string (realm()) << U("\", ");
     }
-    os << oauth1_strings::version << "=\"1.0";
-    os << "\", " << oauth1_strings::consumer_key << "=\"" << web::uri::encode_data_string (consumer_key());
+    os << oauth1_strings::version << U("=\"1.0");
+    os << U("\", ") << oauth1_strings::consumer_key << U("=\"") << web::uri::encode_data_string (consumer_key());
     if (!m_token.access_token().empty())
     {
-        os << "\", " << oauth1_strings::token << "=\"" << web::uri::encode_data_string(m_token.access_token());
+        os << U("\", ") << oauth1_strings::token << U("=\"") << web::uri::encode_data_string(m_token.access_token());
     }
-    os << "\", " << oauth1_strings::signature_method << "=\"" << method();
-    os << "\", " << oauth1_strings::timestamp << "=\"" << state.timestamp();
-    os << "\", " << oauth1_strings::nonce << "=\"" << state.nonce();
-    os << "\", " << oauth1_strings::signature << "=\"" << uri::encode_data_string(_build_signature(request, state));
-    os << "\"";
+    os << U("\", ") << oauth1_strings::signature_method << U("=\"") << method();
+    os << U("\", ") << oauth1_strings::timestamp << U("=\"") << state.timestamp();
+    os << U("\", ") << oauth1_strings::nonce << U("=\"") << state.nonce();
+    os << U("\", ") << oauth1_strings::signature << U("=\"") << uri::encode_data_string(_build_signature(request, state));
+    os << U("\"");
 
     if (!state.extra_key().empty())
     {
-        os << ", " << state.extra_key() << "=\"" << web::uri::encode_data_string(state.extra_value()) << "\"";
+        os << U(", ") << state.extra_key() << U("=\"") << web::uri::encode_data_string(state.extra_value()) << U("\"");
     }
 
     request.headers().add(header_names::authorization, os.str());
