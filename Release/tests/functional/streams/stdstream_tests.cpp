@@ -33,7 +33,7 @@ namespace tests { namespace functional { namespace streams {
 using namespace ::pplx;
 using namespace utility;
 
-utility::string_t get_full_name(const utility::string_t &name);
+utf8string get_full_name(const utility::string_t &name);
 
 template<typename CharType>
 void extract_test(std::basic_istream<CharType>& stream, std::basic_string<CharType> expected)

@@ -439,7 +439,7 @@ public:
         size_t data_length)
     {
         auto localHeaders = headers;
-        localHeaders["User-Agent"] = "test_http_client";
+        localHeaders[U("User-Agent")] = U("test_http_client");
         web::http::http_request request;
         request.set_method(method);
         request.set_request_uri(web::http::uri_builder(m_uri).append_path(path).to_uri());
@@ -452,7 +452,7 @@ public:
             else
                 currentValue = currentValue + U(", ") + it->second;
         }
-        request.set_body(utility::string_t(reinterpret_cast<const char*>(data), data_length));
+        request.set_body(utility::string_t(reinterpret_cast<const utility::char_t*>(data), data_length));
 
         m_responses.push_back(m_client.request(request));
         return 0;

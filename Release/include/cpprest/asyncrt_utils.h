@@ -226,6 +226,17 @@ namespace conversions
     namespace details
     {
 
+#if defined(_UTF16_STRINGS) && !defined(_WIN32)
+        template<class T>
+        inline utf16string to_wstring(const T& t)
+        {
+            utf16ostringstream os;
+            os.imbue(std::locale::classic());
+            os << t;
+            return os.str();
+        }
+#endif
+
 #if defined(__ANDROID__)
         template<class T>
         inline std::string to_string(const T& t)
@@ -241,8 +252,11 @@ namespace conversions
         inline utility::string_t to_string_t(T&& t)
         {
 #ifdef _UTF16_STRINGS
+#ifdef _WIN32
             using std::to_wstring;
+#else
             return to_wstring(std::forward<T>(t));
+#endif
 #else
 #if !defined(__ANDROID__)
             using std::to_string;
@@ -615,7 +629,7 @@ class cmp
 {
 public:
 
-    static int icmp(std::string left, std::string right)
+    static int icmp(utility::string_t left, utility::string_t right)
     {
         size_t i;
         for (i = 0; i < left.size(); ++i)
@@ -632,10 +646,10 @@ public:
     }
 
 private:
-    static char tolower(char c)
+    static utility::char_t tolower(utility::char_t c)
     {
-        if (c >= 'A' && c <= 'Z')
-            return static_cast<char>(c - 'A' + 'a');
+        if (c >= _XPLATSTR('A') && c <= _XPLATSTR('Z'))
+            return static_cast<char>(c - _XPLATSTR('A') + _XPLATSTR('a'));
         return c;
     }
 };

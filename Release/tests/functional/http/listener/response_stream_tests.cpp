@@ -33,7 +33,7 @@ SUITE(response_stream_tests)
 // Used to prepare data for read tests
 void fill_file(const utility::string_t &name, size_t repetitions = 1)
 {
-    std::fstream stream(name, std::ios_base::out | std::ios_base::trunc);
+    std::fstream stream(utility::conversions::to_utf8string(name), std::ios_base::out | std::ios_base::trunc);
 
     for (size_t i = 0; i < repetitions; i++)
         stream << "abcdefghijklmnopqrstuvwxyz";

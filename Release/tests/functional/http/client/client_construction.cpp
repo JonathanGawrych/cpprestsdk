@@ -194,7 +194,7 @@ TEST_FIXTURE(uri_address, ssl_context_callback_https)
         called = true;
     });
 
-    http_client client("https://www.google.com/", config);
+    http_client client(U("https://www.google.com/"), config);
 
     try
     {
@@ -218,7 +218,7 @@ TEST_FIXTURE(uri_address, ssl_context_callback_http)
         called = true;
     });
 
-    http_client client("http://www.google.com/", config);
+    http_client client(U("http://www.google.com/"), config);
 
     try
     {

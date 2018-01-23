@@ -32,7 +32,7 @@ using namespace ::pplx;
 
 // Used to prepare data for read tests
 
-utility::string_t get_full_name(const utility::string_t &name);
+utf8string get_full_name(const utility::string_t &name);
 
 void fill_file(const utility::string_t &name, size_t repetitions = 1);
 #ifdef _WIN32
@@ -136,7 +136,7 @@ TEST(OpenForReadDoesntCreateFile1)
     VERIFY_THROWS_SYSTEM_ERROR(OPEN_R<char>(fname).get(), std::errc::no_such_file_or_directory);
 
     std::ifstream is;
-    VERIFY_IS_NULL(is.rdbuf()->open(fname.c_str(), std::ios::in));
+    VERIFY_IS_NULL(is.rdbuf()->open(utility::conversions::to_utf8string(fname).c_str(), std::ios::in));
 }
 
 TEST(OpenForReadDoesntCreateFile2)
@@ -146,7 +146,7 @@ TEST(OpenForReadDoesntCreateFile2)
     VERIFY_THROWS_SYSTEM_ERROR(OPEN<char>(fname, std::ios_base::in | std::ios_base::binary ).get(), std::errc::no_such_file_or_directory);
 
     std::ifstream is;
-    VERIFY_IS_NULL(is.rdbuf()->open(fname.c_str(), std::ios::in | std::ios_base::binary));
+    VERIFY_IS_NULL(is.rdbuf()->open(utility::conversions::to_utf8string(fname).c_str(), std::ios::in | std::ios_base::binary));
 }
 
 TEST(WriteSingleCharTest1)
@@ -982,7 +982,7 @@ struct TidyStream
     ~TidyStream()
     {
         _stream.close().wait();
-        std::remove(_fileName.c_str());
+        std::remove(utility::conversions::to_utf8string(_fileName).c_str());
     }
 };
 

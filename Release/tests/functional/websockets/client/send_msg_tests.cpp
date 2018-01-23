@@ -31,7 +31,7 @@ namespace tests { namespace functional { namespace websocket { namespace client 
 
 SUITE(send_msg_tests)
 {
-utility::string_t get_full_name(const utility::string_t &name)
+utf8string get_full_name(const utility::string_t &name)
 {
 #if defined(__cplusplus_winrt)
     // On WinRT, we must compensate for the fact that we will be accessing files in the
@@ -41,7 +41,7 @@ utility::string_t get_full_name(const utility::string_t &name)
             ref new Platform::String(name.c_str()), CreationCollisionOption::ReplaceExisting)).get();
     return file->Path->Data();
 #else
-    return name;
+    return utility::conversions::to_utf8string(name);
 #endif
 }
 

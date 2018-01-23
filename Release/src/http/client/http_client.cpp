@@ -58,13 +58,13 @@ void request_context::complete_request(utility::size64_t body_size)
     finish();
 }
 
-void request_context::report_error(unsigned long error_code, const std::string &errorMessage)
+void request_context::report_error(unsigned long error_code, const utility::string_t &errorMessage)
 {
     report_exception(http_exception(static_cast<int>(error_code), errorMessage));
 }
 
-#if defined(_WIN32)
-void request_context::report_error(unsigned long error_code, const std::wstring &errorMessage)
+#ifdef _UTF16_STRINGS
+void request_context::report_error(unsigned long error_code, const std::string &errorMessage)
 {
     report_exception(http_exception(static_cast<int>(error_code), errorMessage));
 }

@@ -645,17 +645,17 @@ TEST_FIXTURE(uri_address, failed_authentication_attempt, "Ignore:Linux", "89", "
 // http_server does not support auth
 void auth_test_impl(bool fail)
 {
-    std::string user("user1"), password("user1");
+    utility::string_t user(U("user1")), password(U("user1"));
     auto return_code = status_codes::OK;
 
     if (fail)
     {
-        password = "invalid";
+        password = U("invalid");
         return_code = status_codes::Unauthorized;
     }
 
     http_client_config client_config;
-    web::credentials cred(U(user), U(password));
+    web::credentials cred(user, password);
     client_config.set_credentials(cred);
     http_client client(U("http://httpbin.org/basic-auth/user1/user1"), client_config);
 

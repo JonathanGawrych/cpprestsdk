@@ -406,6 +406,20 @@ namespace
     {
         return snprintf(ptr, n, "%lu", val64);
     }
+#ifdef _UTF16_STRINGS
+    static int __attribute__((__unused__)) print_llu(utf16char* ptr, size_t n, unsigned long long val64)
+    {
+        return swprintf(reinterpret_cast<wchar_t*>(ptr), n, L"%llu", val64);
+    }
+    static int __attribute__((__unused__)) print_llu(utf16char* ptr, size_t n, unsigned long val64)
+    {
+        return swprintf(reinterpret_cast<wchar_t*>(ptr), n, L"%lu", val64);
+    }
+    static double __attribute__((__unused__)) anystod(const char16_t* str)
+    {
+        return wcstod(reinterpret_cast<const wchar_t*>(str), nullptr);
+    }
+#endif
     static double __attribute__((__unused__)) anystod(const char* str)
     {
         return strtod(str, nullptr);
@@ -692,7 +706,7 @@ bool JSON_StringParser<CharType>::CompleteComment(typename JSON_Parser<CharType>
     return true;
 }
 
-void convert_append_unicode_code_unit(JSON_Parser<wchar_t>::Token &token, utf16char value)
+void convert_append_unicode_code_unit(JSON_Parser<utf16char>::Token &token, utf16char value)
 {
     token.string_val.push_back(value);
 }

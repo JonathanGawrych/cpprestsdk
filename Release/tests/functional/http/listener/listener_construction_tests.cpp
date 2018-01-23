@@ -545,7 +545,9 @@ XzJTD4slrGSJrcpLt/g/Jqqdjg==
 
             for (auto&& h : all_headers)
             {
-                std::cout << "HEADER - " << h.first << ": " << h.second << std::endl;
+                utility::ostringstream_t str_t;
+                str_t << U("HEADER - ") << h.first << U(": ") << h.second << std::endl;
+                std::cout << utility::conversions::to_utf8string(str_t.str());
                 VERIFY_IS_TRUE(request.headers().has(h.first));
                 VERIFY_ARE_EQUAL(h.second, request.headers().find(h.first)->second);
             }

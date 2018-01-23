@@ -708,7 +708,7 @@ utility::string_t datetime::to_string(date_format format) const
             &datetime);
     }
 
-    return std::string(output);
+    return utility::conversions::to_string_t(utf8string(output));
 #endif
 }
 
@@ -892,7 +892,7 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
 
     return datetime();
 #else
-    std::string input(dateString);
+    std::string input(utility::conversions::to_utf8string(dateString));
 
     struct tm output = tm();
 
@@ -903,8 +903,9 @@ datetime __cdecl datetime::from_string(const utility::string_t& dateString, date
     else
     {
         // Try to extract the fractional second from the timestamp
-        utility::string_t input;
-        extract_fractional_second(dateString, input, ufrac_second);
+        utility::string_t input_t;
+        extract_fractional_second(dateString, input_t, ufrac_second);
+        utf8string input = utility::conversions::to_utf8string(input_t);
 
         auto result = strptime(input.data(), "%Y-%m-%dT%H:%M:%SZ", &output);
 

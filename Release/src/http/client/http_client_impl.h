@@ -58,10 +58,10 @@ public:
     /// </summary>
     void complete_request(utility::size64_t body_size);
 
-    void report_error(unsigned long error_code, const std::string &errorMessage);
+    void report_error(unsigned long error_code, const utility::string_t &errorMessage);
 
-#ifdef _WIN32
-    void report_error(unsigned long error_code, const std::wstring &errorMessage);
+#ifdef _UTF16_STRINGS
+    void report_error(unsigned long error_code, const std::string &errorMessage);
 #endif
 
     template<typename _ExceptionType>
