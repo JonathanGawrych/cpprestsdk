@@ -36,9 +36,9 @@ MainPage::MainPage()
     : m_live_oauth2_config(
         s_live_key,
         s_live_secret,
-        L"https://login.live.com/oauth20_authorize.srf",
-        L"https://login.live.com/oauth20_token.srf",
-        L"https://login.live.com/oauth20_desktop.srf")
+        U("https://login.live.com/oauth20_authorize.srf"),
+        U("https://login.live.com/oauth20_token.srf"),
+        U("https://login.live.com/oauth20_desktop.srf"))
 {
     InitializeComponent();
 }
@@ -66,16 +66,18 @@ void OAuth2Live::MainPage::_UpdateButtonState()
 
 void OAuth2Live::MainPage::_GetToken()
 {
-    m_live_oauth2_config.set_scope(L"wl.basic wl.calendars");
+    m_live_oauth2_config.set_scope(U("wl.basic wl.calendars"));
 
     // Start over, clear tokens and button state.
     m_live_oauth2_config.set_token(oauth2_token());
     AccessToken->Text = "";
     _UpdateButtonState();
 
-    String^ authURI = ref new String(m_live_oauth2_config.build_authorization_uri(true).c_str());
+    String^ authURI = ref new String(
+		utility::conversions::to_utf16string(m_live_oauth2_config.build_authorization_uri(true)).c_str());
     auto startURI = ref new Uri(authURI);
-    String^ redirectURI = ref new String(m_live_oauth2_config.redirect_uri().c_str());
+    String^ redirectURI = ref new String(
+		utility::conversions::to_utf16string(m_live_oauth2_config.redirect_uri()).c_str());
     auto endURI = ref new Uri(redirectURI);
 
     try
@@ -101,21 +103,23 @@ void OAuth2Live::MainPage::_GetToken()
                 case WebAuthenticationStatus::Success:
                 {
                     DebugArea->Text += "Success\n";
-                    utility::string_t data = result->ResponseData->Data();
+                    utf16string data = result->ResponseData->Data();
                     DebugArea->Text += "Redirected URI:\n" + result->ResponseData + "\n";
                     DebugArea->Text += "> Obtaining token using the redirected URI\n";
-                    m_live_oauth2_config.token_from_redirected_uri(data).then([this](pplx::task<void> token_task)
+                    m_live_oauth2_config.token_from_redirected_uri(utility::conversions::to_string_t(data))
+						.then([this](pplx::task<void> token_task)
                     {
                         try
                         {
                             token_task.wait();
                             DebugArea->Text += "< Got token\n";
-                            AccessToken->Text = ref new String(m_live_oauth2_config.token().access_token().c_str());
+                            AccessToken->Text = ref new String(
+								utility::conversions::to_utf16string(m_live_oauth2_config.token().access_token()).c_str());
                         }
                         catch (const oauth2_exception& e)
                         {
                             DebugArea->Text += "< Failed to get token\n";
-                            String^ error = ref new String(utility::conversions::to_string_t(e.what()).c_str());
+                            String^ error = ref new String(utility::conversions::to_utf16string(e.what()).c_str());
                             DebugArea->Text += "Error: " + error + "\n";
                         }
                     }, pplx::task_continuation_context::use_current());
@@ -159,7 +163,7 @@ void OAuth2Live::MainPage::GetInfoButtonClick(Platform::Object^ sender, Windows:
     })
     .then([this](web::json::value j) -> void
     {
-        String^ json_code = ref new String(j.serialize().c_str());
+        String^ json_code = ref new String(utility::conversions::to_utf16string(j.serialize()).c_str());
         DebugArea->Text += "< User info (JSON): " + json_code + "\n";
     }, pplx::task_continuation_context::use_current());
 }
@@ -174,7 +178,7 @@ void OAuth2Live::MainPage::GetContactsButtonClick(Platform::Object^ sender, Wind
     })
     .then([this](web::json::value j) -> void
     {
-        String^ json_code = ref new String(j.serialize().c_str());
+        String^ json_code = ref new String(utility::conversions::to_utf16string(j.serialize()).c_str());
         DebugArea->Text += "< User contacts (JSON): " + json_code + "\n";
     }, pplx::task_continuation_context::use_current());
 }
@@ -189,7 +193,7 @@ void OAuth2Live::MainPage::GetEventsButtonClick(Platform::Object^ sender, Window
     })
     .then([this](web::json::value j) -> void
     {
-        String^ json_code = ref new String(j.serialize().c_str());
+        String^ json_code = ref new String(utility::conversions::to_utf16string(j.serialize()).c_str());
         DebugArea->Text += "< User calendar events (JSON): " + json_code + "\n";
     }, pplx::task_continuation_context::use_current());
 }
@@ -223,12 +227,12 @@ void OAuth2Live::MainPage::RefreshTokenButtonClick(Platform::Object^ sender, Win
         {
             refresh_task.wait();
             DebugArea->Text += "< Got token\n";
-            AccessToken->Text = ref new String(m_live_oauth2_config.token().access_token().c_str());
+            AccessToken->Text = ref new String(utility::conversions::to_utf16string(m_live_oauth2_config.token().access_token()).c_str());
         }
         catch (const oauth2_exception& e)
         {
             DebugArea->Text += "< Failed to get token\n";
-            String^ error = ref new String(utility::conversions::to_string_t(e.what()).c_str());
+            String^ error = ref new String(utility::conversions::to_utf16string(e.what()).c_str());
             DebugArea->Text += "Error: " + error + "\n";
         }
     }, pplx::task_continuation_context::use_current());

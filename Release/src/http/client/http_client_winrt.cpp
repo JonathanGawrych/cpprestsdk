@@ -82,7 +82,7 @@ public:
     {
         http_response &response = m_request->m_response;
         response.set_status_code((http::status_code)dw);
-        response.set_reason_phrase(phrase);
+        response.set_reason_phrase(utility::conversions::to_string_t(phrase));
 
         utf16char *hdrStr = nullptr;
         HRESULT hr = xmlReq->GetAllResponseHeaders(&hdrStr);
@@ -160,9 +160,13 @@ public:
     {
         if (m_request->m_exceptionPtr == nullptr)
         {
-            std::wstring msg(L"IXMLHttpRequest2Callback::OnError: ");
+            utility::string_t msg(U("IXMLHttpRequest2Callback::OnError: "));
+#ifdef _UTF16_STRINGS
             msg.append(std::to_wstring(hrError));
-            msg.append(L": ");
+#else
+            msg.append(std::to_string(hrError));
+#endif
+            msg.append(U(": "));
             msg.append(utility::conversions::to_string_t(utility::details::windows_category().message(hrError)));
             m_request->report_error(hrError, msg);
         }
@@ -392,14 +396,14 @@ protected:
 
         if (!web::http::details::validate_method(msg.method()))
         {
-            request->report_exception(http_exception(L"The method string is invalid."));
+            request->report_exception(http_exception(U("The method string is invalid.")));
             return;
         }
 
         if (msg.method() == http::methods::TRCE)
         {
             // Not supported by WinInet. Generate a more specific exception than what WinInet does.
-            request->report_exception(http_exception(L"TRACE is not supported"));
+            request->report_exception(http_exception(U("TRACE is not supported")));
             return;
         }
 
@@ -407,7 +411,7 @@ protected:
         if (content_length == std::numeric_limits<size_t>::max())
         {
             // IXHR2 does not allow transfer encoding chunked. So the user is expected to set the content length
-            request->report_exception(http_exception(L"Content length is not specified in the http headers"));
+            request->report_exception(http_exception(U("Content length is not specified in the http headers")));
             return;
         }
 
@@ -420,7 +424,7 @@ protected:
             reinterpret_cast<void**>(winrt_context->m_hRequest.GetAddressOf()));
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to create IXMLHTTPRequest2 instance");
+            request->report_error(hr, U("Failure to create IXMLHTTPRequest2 instance"));
             return;
         }
 
@@ -432,42 +436,42 @@ protected:
         const auto &proxy_cred = proxy.credentials();
         if (!proxy.is_default())
         {
-            request->report_exception(http_exception(L"Only a default proxy server is supported"));
+            request->report_exception(http_exception(U("Only a default proxy server is supported")));
             return;
         }
 
         // New scope to ensure plain text password is cleared as soon as possible.
         {
             utility::string_t username, proxy_username;
-            const utility::char_t *password = nullptr;
-            const utility::char_t *proxy_password = nullptr;
-            ::web::details::plaintext_string password_plaintext, proxy_password_plaintext;
+            const utf16char* password = nullptr;
+            const utf16char* proxy_password = nullptr;
+            ::web::details::plaintext_string_utf16 password_plaintext, proxy_password_plaintext;
 
             if (client_cred.is_set())
             {
                 username = client_cred.username();
-                password_plaintext = client_cred._internal_decrypt();
+                password_plaintext = utility::conversions::to_utf16string(client_cred._internal_decrypt());
                 password = password_plaintext->c_str();
             }
             if (proxy_cred.is_set())
             {
                 proxy_username = proxy_cred.username();
-                proxy_password_plaintext = proxy_cred._internal_decrypt();
+                proxy_password_plaintext = utility::conversions::to_utf16string(proxy_cred._internal_decrypt());
                 proxy_password = proxy_password_plaintext->c_str();
             }
 
             hr = winrt_context->m_hRequest->Open(
-                msg.method().c_str(),
-                encoded_resource.c_str(),
+                utility::conversions::to_utf16string(msg.method()).c_str(),
+                utility::conversions::to_utf16string(encoded_resource).c_str(),
                 Make<HttpRequestCallback>(winrt_context).Get(),
-                username.c_str(),
+                utility::conversions::to_utf16string(username).c_str(),
                 password,
-                proxy_username.c_str(),
+                utility::conversions::to_utf16string(proxy_username).c_str(),
                 proxy_password);
         }
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to open HTTP request");
+            request->report_error(hr, U("Failure to open HTTP request"));
             return;
         }
 
@@ -475,7 +479,7 @@ protected:
         hr = winrt_context->m_hRequest->SetProperty(XHR_PROP_NO_CRED_PROMPT, TRUE);
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to set no credentials prompt property");
+            request->report_error(hr, U("Failure to set no credentials prompt property"));
             return;
         }
 
@@ -485,7 +489,7 @@ protected:
         hr = winrt_context->m_hRequest->SetProperty(XHR_PROP_TIMEOUT, timeout);
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to set HTTP request properties");
+            request->report_error(hr, U("Failure to set HTTP request properties"));
             return;
         }
 
@@ -496,21 +500,23 @@ protected:
         hr = winrt_context->m_hRequest->SetProperty(XHR_PROP_ONDATA_THRESHOLD, XHR_PROP_ONDATA_NEVER);
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to turn off on data threshold");
+            request->report_error(hr, U("Failure to turn off on data threshold"));
         }
 #endif
 
         // Add headers.
         for (const auto &hdr : msg.headers())
         {
-            winrt_context->m_hRequest->SetRequestHeader(hdr.first.c_str(), hdr.second.c_str());
+            winrt_context->m_hRequest->SetRequestHeader(
+				utility::conversions::to_utf16string(hdr.first).c_str(),
+				utility::conversions::to_utf16string(hdr.second).c_str());
         }
 
         // Set response stream.
         hr = winrt_context->m_hRequest->SetCustomResponseStream(Make<IResponseStream>(winrt_context).Get());
         if (FAILED(hr))
         {
-            request->report_error(hr, L"Failure to set HTTP response stream");
+            request->report_error(hr, U("Failure to set HTTP response stream"));
             return;
         }
 
@@ -542,7 +548,7 @@ protected:
 
         if ( FAILED(hr) )
         {
-            request->report_error(hr, L"Failure to send HTTP request");
+            request->report_error(hr, U("Failure to send HTTP request"));
             return;
         }
 

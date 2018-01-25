@@ -702,7 +702,7 @@ TEST(parse_overload_success)
     error_code_helper(arrayStringStream);
     error_code_helper(objStringStream);
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
     std::wstringbuf buf;
 
     buf.sputn(valueStr.c_str(), valueStr.size());
@@ -736,7 +736,7 @@ TEST(parse_overload_failed)
     VERIFY_IS_TRUE(streamErr.value() > 0);
     VERIFY_IS_TRUE(parsedObject.is_null());
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
     std::wstringbuf buf;
     buf.sputn(str.c_str(), str.size());
     std::wistream iStream(&buf);

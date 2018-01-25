@@ -28,12 +28,59 @@
 
 #include "cpprest/details/SafeInt3.hpp"
 
-namespace utility
-{
+// TEMPORARY, REMOVE:
+#define _WIN32_USE_UTF8
 
-#ifdef _WIN32
+//
+// On POSIX platforms, all strings are narrow
+// On Windows, all strings are wide, unless requested otherwise
+//
+#if defined(_WIN32) && !defined(_WIN32_USE_UTF8)
 #define _UTF16_STRINGS
 #endif
+
+typedef char utf8char;
+typedef std::string utf8string;
+typedef std::stringbuf utf8stringbuf;
+#ifdef _WIN32
+#define _XPLATUTF8STR(x) u8 ## x
+#else
+#define _XPLATUTF8STR(x) x
+#endif
+typedef std::stringstream utf8stringstream;
+typedef std::ostringstream utf8ostringstream;
+typedef std::ofstream utf8ofstream;
+typedef std::ostream utf8ostream;
+typedef std::istream utf8istream;
+typedef std::ifstream utf8ifstream;
+typedef std::istringstream utf8istringstream;
+
+#ifdef _WIN32
+typedef wchar_t utf16char;
+typedef std::wstring utf16string;
+typedef std::wstringbuf utf16stringbuf;
+typedef std::wstringstream utf16stringstream;
+typedef std::wostringstream utf16ostringstream;
+typedef std::wofstream utf16ofstream;
+typedef std::wostream utf16ostream;
+typedef std::wistream utf16istream;
+typedef std::wifstream utf16ifstream;
+typedef std::wistringstream utf16istringstream;
+#else
+typedef char16_t utf16char;
+typedef std::u16string utf16string;
+typedef std::basic_stringbuf<utf16char> utf16stringbuf;
+typedef std::basic_stringstream<utf16char> utf16stringstream;
+typedef std::basic_ostringstream<utf16char> utf16ostringstream;
+typedef std::basic_ofstream<utf16char> utf16ofstream;
+typedef std::basic_ostream<utf16char> utf16ostream;
+typedef std::basic_istream<utf16char> utf16istream;
+typedef std::basic_ifstream<utf16char> utf16ifstream;
+typedef std::basic_istringstream<utf16char> utf16istringstream;
+#endif
+
+namespace utility
+{
 
 // We should be using a 64-bit size type for most situations that do
 // not involve specifying the size of a memory allocation or buffer.
@@ -44,36 +91,32 @@ typedef uint32_t HRESULT; // Needed for PPLX
 #endif
 
 #ifdef _UTF16_STRINGS
-//
-// On Windows, all strings are wide
-//
-typedef wchar_t char_t ;
-typedef std::wstring string_t;
+typedef utf16char char_t;
+typedef utf16string string_t;
+typedef utf16stringbuf stringbuf_t;
 #define _XPLATSTR(x) L ## x
-typedef std::wostringstream ostringstream_t;
-typedef std::wofstream ofstream_t;
-typedef std::wostream ostream_t;
-typedef std::wistream istream_t;
-typedef std::wifstream ifstream_t;
-typedef std::wistringstream istringstream_t;
-typedef std::wstringstream stringstream_t;
+typedef utf16ostringstream ostringstream_t;
+typedef utf16ofstream ofstream_t;
+typedef utf16ostream ostream_t;
+typedef utf16istream istream_t;
+typedef utf16ifstream ifstream_t;
+typedef utf16istringstream istringstream_t;
+typedef utf16stringstream stringstream_t;
 #define ucout std::wcout
 #define ucin std::wcin
 #define ucerr std::wcerr
 #else
-//
-// On POSIX platforms, all strings are narrow
-//
-typedef char char_t;
-typedef std::string string_t;
-#define _XPLATSTR(x) x
-typedef std::ostringstream ostringstream_t;
-typedef std::ofstream ofstream_t;
-typedef std::ostream ostream_t;
-typedef std::istream istream_t;
-typedef std::ifstream ifstream_t;
-typedef std::istringstream istringstream_t;
-typedef std::stringstream stringstream_t;
+typedef utf8char char_t;
+typedef utf8string string_t;
+typedef utf8stringbuf stringbuf_t;
+#define _XPLATSTR(x) _XPLATUTF8STR(x)
+typedef utf8ostringstream ostringstream_t;
+typedef utf8ofstream ofstream_t;
+typedef utf8ostream ostream_t;
+typedef utf8istream istream_t;
+typedef utf8ifstream ifstream_t;
+typedef utf8istringstream istringstream_t;
+typedef utf8stringstream stringstream_t;
 #define ucout std::cout
 #define ucin std::cin
 #define ucerr std::cerr
@@ -84,32 +127,6 @@ typedef std::stringstream stringstream_t;
 #endif // !_TURN_OFF_PLATFORM_STRING
 
 }// namespace utility
-
-typedef char utf8char;
-typedef std::string utf8string;
-typedef std::stringstream utf8stringstream;
-typedef std::ostringstream utf8ostringstream;
-typedef std::ostream utf8ostream;
-typedef std::istream utf8istream;
-typedef std::istringstream utf8istringstream;
-
-#ifdef _UTF16_STRINGS
-typedef wchar_t utf16char;
-typedef std::wstring utf16string;
-typedef std::wstringstream utf16stringstream;
-typedef std::wostringstream utf16ostringstream;
-typedef std::wostream utf16ostream;
-typedef std::wistream utf16istream;
-typedef std::wistringstream utf16istringstream;
-#else
-typedef char16_t utf16char;
-typedef std::u16string utf16string;
-typedef std::basic_stringstream<utf16char> utf16stringstream;
-typedef std::basic_ostringstream<utf16char> utf16ostringstream;
-typedef std::basic_ostream<utf16char> utf16ostream;
-typedef std::basic_istream<utf16char> utf16istream;
-typedef std::basic_istringstream<utf16char> utf16istringstream;
-#endif
 
 
 #if defined(_WIN32)

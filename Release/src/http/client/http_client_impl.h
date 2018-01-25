@@ -60,7 +60,7 @@ public:
 
     void report_error(unsigned long error_code, const std::string &errorMessage);
 
-#ifdef _WIN32
+#ifdef _UTF16_STRINGS
     void report_error(unsigned long error_code, const std::wstring &errorMessage);
 #endif
 

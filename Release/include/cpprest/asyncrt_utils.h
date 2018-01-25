@@ -21,6 +21,7 @@
 #include <locale.h>
 #include "pplx/pplxtasks.h"
 #include "cpprest/details/basic_types.h"
+#include "cpprest/details/web_utilities.h"
 
 #if !defined(_WIN32) || (_MSC_VER >= 1700)
 #include <chrono>
@@ -97,6 +98,34 @@ namespace conversions
     /// <param name="s">A single byte character UTF-8 string.</param>
     /// <returns>A single byte character UTF-8 string.</returns>
     _ASYNCRTIMP utf8string __cdecl latin1_to_utf8(const std::string &s);
+
+    /// <summary>
+    /// Converts to a UTF-16 plaintext string from a plaintext string securely.
+    /// </summary>
+    /// <param name="value">A single byte character UTF-8 plaintext string.</param>
+    /// <returns>A two byte character UTF-16 plaintext string.</returns>
+    _ASYNCRTIMP web::details::plaintext_string_utf16 __cdecl to_utf16string(const web::details::plaintext_string_utf8& value);
+
+    /// <summary>
+    /// Converts to a UTF-16 plaintext string from a plaintext string securely.
+    /// </summary>
+    /// <param name="value">A two byte character UTF-16 plaintext string.</param>
+    /// <returns>A two byte character UTF-16 plaintext string.</returns>
+    inline const web::details::plaintext_string_utf16& to_utf16string(const web::details::plaintext_string_utf16& value) { return value; }
+
+    /// <summary>
+    /// Converts to a UTF-8 plaintext string from a plaintext string securely.
+    /// </summary>
+    /// <param name="value">A single byte character UTF-8 plaintext string.</param>
+    /// <returns>A single byte character UTF-8 plaintext string.</returns>
+    inline const web::details::plaintext_string_utf8& to_utf8string(const web::details::plaintext_string_utf8& value) { return value; }
+
+    /// <summary>
+    /// Converts to a UTF-8 plaintext string from a plaintext string securely.
+    /// </summary>
+    /// <param name="value">A two byte character UTF-16 plaintext string.</param>
+    /// <returns>A single byte character UTF-8 plaintext string.</returns>
+    _ASYNCRTIMP web::details::plaintext_string_utf8 __cdecl to_utf8string(const web::details::plaintext_string_utf16& value);
 
     /// <summary>
     /// Converts to a platform dependent Unicode string type.
@@ -401,7 +430,11 @@ namespace details
     inline bool str_icmp(const utility::string_t &left, const utility::string_t &right)
     {
 #ifdef _WIN32
+#ifdef _UTF16_STRINGS
         return _wcsicmp(left.c_str(), right.c_str()) == 0;
+#else
+        return _stricmp(left.c_str(), right.c_str()) == 0;
+#endif
 #else
         return boost::iequals(left, right);
 #endif

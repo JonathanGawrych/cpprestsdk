@@ -88,7 +88,9 @@ public:
             // 'Sec-WebSocket-Protocol' header here. It requires you to go through their API instead.
             if (!utility::details::str_icmp(header.first, protocolHeader))
             {
-                m_msg_websocket->SetRequestHeader(Platform::StringReference(header.first.c_str()), Platform::StringReference(header.second.c_str()));
+                m_msg_websocket->SetRequestHeader(
+					Platform::StringReference(utility::conversions::to_utf16string(header.first).c_str()),
+					Platform::StringReference(utility::conversions::to_utf16string(header.second).c_str()));
             }
         }
 
@@ -98,7 +100,8 @@ public:
             const std::vector<utility::string_t> protocols = m_config.subprotocols();
             for (const auto & value : protocols)
             {
-                m_msg_websocket->Control->SupportedProtocols->Append(Platform::StringReference(value.c_str()));
+                m_msg_websocket->Control->SupportedProtocols->Append(
+					Platform::StringReference(utility::conversions::to_utf16string(value).c_str()));
             }
         }
 
@@ -106,8 +109,8 @@ public:
         {
             auto password = m_config.credentials()._internal_decrypt();
             m_msg_websocket->Control->ServerCredential = ref new Windows::Security::Credentials::PasswordCredential("WebSocketClientCredentialResource",
-                Platform::StringReference(m_config.credentials().username().c_str()),
-                Platform::StringReference(password->c_str()));
+                Platform::StringReference(utility::conversions::to_utf16string(m_config.credentials().username()).c_str()),
+                Platform::StringReference(utility::conversions::to_utf16string(*password).c_str()));
         }
 
         m_context = ref new ReceiveContext([=](const websocket_incoming_message &msg)
@@ -159,11 +162,12 @@ public:
         {
             auto password = proxy_cred._internal_decrypt();
             m_msg_websocket->Control->ProxyCredential = ref new Windows::Security::Credentials::PasswordCredential("WebSocketClientProxyCredentialResource",
-                Platform::StringReference(proxy_cred.username().c_str()),
-                Platform::StringReference(password->c_str()));
+                Platform::StringReference(utility::conversions::to_utf16string(proxy_cred.username()).c_str()),
+                Platform::StringReference(utility::conversions::to_utf16string(*password).c_str()));
         }
 
-        const auto uri = ref new Windows::Foundation::Uri(Platform::StringReference(m_uri.to_string().c_str()));
+        const auto uri = ref new Windows::Foundation::Uri(
+			Platform::StringReference(utility::conversions::to_utf16string(m_uri.to_string()).c_str()));
 
         m_msg_websocket->MessageReceived += ref new TypedEventHandler<MessageWebSocket^, MessageWebSocketMessageReceivedEventArgs^>(m_context, &ReceiveContext::OnReceive);
         m_msg_websocket->Closed += ref new TypedEventHandler<IWebSocket^, WebSocketClosedEventArgs^>(m_context, &ReceiveContext::OnClosed);
@@ -395,7 +399,8 @@ public:
     pplx::task<void> close(websocket_close_status status, const utility::string_t &strreason=_XPLATSTR(""))
     {
         // Send a close frame to the server
-        m_msg_websocket->Close(static_cast<unsigned short>(status), Platform::StringReference(strreason.c_str()));
+        m_msg_websocket->Close(static_cast<unsigned short>(status),
+			Platform::StringReference(utility::conversions::to_utf16string(strreason).c_str()));
         // Wait for the close response frame from the server.
         return pplx::create_task(m_close_tce);
     }
@@ -461,7 +466,9 @@ void ReceiveContext::OnReceive(MessageWebSocket^ sender, MessageWebSocketMessage
 
 void ReceiveContext::OnClosed(IWebSocket^ sender, WebSocketClosedEventArgs^ args)
 {
-    m_close_handler(static_cast<websocket_close_status>(args->Code), args->Reason->Data(), utility::details::create_error_code(0));
+    m_close_handler(static_cast<websocket_close_status>(args->Code),
+		utility::conversions::to_string_t(utf16string(args->Reason->Data())),
+		utility::details::create_error_code(0));
 }
 
 websocket_client_task_impl::websocket_client_task_impl(websocket_client_config config) :

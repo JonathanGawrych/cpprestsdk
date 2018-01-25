@@ -128,7 +128,7 @@ void CasaLens::handle_post(http_request message)
     }
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UTF16_STRINGS)
 int wmain(int argc, wchar_t *args[])
 #else
 int main(int argc, char *args[])
@@ -136,21 +136,21 @@ int main(int argc, char *args[])
 {
     if(argc != 2)
     {
-        wprintf(U("Usage: casalens.exe port\n"));
+        ucout << U("Usage: casalens.exe port") << std::endl;
         return -1;
     }
 
-    std::wstring address = U("http://localhost:");
+    utility::string_t address = U("http://localhost:");
     address.append(args[1]);
 
     CasaLens listener(address);
     listener.open().wait();
 
-    std::wcout << utility::string_t(U("Listening for requests at: ")) << address << std::endl;
+    ucout << U("Listening for requests at: ") << address << std::endl;
 
-    std::string line;
-    std::wcout << U("Hit Enter to close the listener.");
-    std::getline(std::cin, line);
+    utility::string_t line;
+    ucout << U("Hit Enter to close the listener.");
+    std::getline(ucin, line);
 
     listener.close().wait();
 

@@ -940,7 +940,7 @@ TEST(read_one_byte_at_4G)
     // Create a file with one byte.
     string_t filename = U("read_one_byte_at_4G.txt");
     // create a sparse file with sparse file apis
-    auto handle = CreateSparseFile(filename.c_str());
+    auto handle = CreateSparseFile(utility::conversions::to_utf16string(filename).c_str());
     VERIFY_ARE_NOT_EQUAL(handle, INVALID_HANDLE_VALUE);
 
     // write 1 byte

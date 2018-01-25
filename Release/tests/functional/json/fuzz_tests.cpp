@@ -36,7 +36,9 @@ std::string get_fuzzed_file_path()
 
 TEST(fuzz_json_parser, "Requires", "fuzzedinputfile")
 {
-    std::wstring ipfile = utility::conversions::to_utf16string(get_fuzzed_file_path());
+    typedef std::basic_string<char32_t> utf32string;
+
+    utility::string_t ipfile = utility::conversions::to_string_t(get_fuzzed_file_path());
     if (true == ipfile.empty())
     {
         VERIFY_IS_TRUE(false, "Input file is empty");
@@ -44,26 +46,42 @@ TEST(fuzz_json_parser, "Requires", "fuzzedinputfile")
     }
 
     auto fs = Concurrency::streams::file_stream<uint8_t>::open_istream(ipfile).get();
-    concurrency::streams::container_buffer<std::string> cbuf;
+    concurrency::streams::container_buffer<utf8string> cbuf;
     fs.read_to_end(cbuf).get();
     fs.close().get();
-    auto json_str = cbuf.collection();
 
-    // Look for UTF-8 BOM
-    if ((uint8_t)json_str[0] != 0xEF || (uint8_t)json_str[1] != 0xBB || (uint8_t)json_str[2] != 0xBF)
+    utf8string uf8_json_str = cbuf.collection();
+    utf16string utf16_json_str(reinterpret_cast<utf16char*>(&uf8_json_str[0]),
+                               reinterpret_cast<utf16char*>(&uf8_json_str[0] + uf8_json_str.size()));
+    utf32string utf32_json_str(reinterpret_cast<char32_t*>(&uf8_json_str[0]),
+                               reinterpret_cast<char32_t*>(&uf8_json_str[0] + uf8_json_str.size()));
+
+    utility::string_t json_str;
+
+    if ((uint8_t)uf8_json_str[0] == 0xEF ||
+        (uint8_t)uf8_json_str[1] == 0xBB ||
+        (uint8_t)uf8_json_str[2] == 0xBF)
     {
-        VERIFY_IS_TRUE(false, "Input file encoding is not UTF-8. Test will not parse the file.");
+        // UTF-8, remove the BOM
+        uf8_json_str.erase(0, 3);
+        json_str = utility::conversions::to_string_t(uf8_json_str);
+    }
+    else if (utf16_json_str.front() == 0xFEFF && utf32_json_str.front() != 0x0000FEFF)
+    {
+        // UTF-16, remove the BOM
+        utf16_json_str.erase(0, 1);
+        json_str = utility::conversions::to_string_t(utf16_json_str);
+    }
+    else
+    {
+        // either UTF-32, or we can't detect
+        VERIFY_IS_TRUE(false, "Input file encoding is not UTF-8 or UTF-16. Test will not parse the file.");
         return;
     }
 
-    auto utf16_json_str = utility::conversions::utf8_to_utf16(json_str);
-    // UTF8 to UTF16 conversion will retain the BOM, remove it.
-    if (utf16_json_str.front() == 0xFEFF)
-        utf16_json_str.erase(0, 1);
-
     try
     {
-        json::value::parse(std::move(utf16_json_str));
+        json::value::parse(std::move(json_str));
         std::cout << "Input file parsed successfully.";
     }
     catch(const json::json_exception& ex)

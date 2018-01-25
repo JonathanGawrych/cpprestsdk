@@ -19,7 +19,6 @@
 #include <vector>
 #include <functional>
 
-#include "cpprest/asyncrt_utils.h"
 #include "cpprest/details/basic_types.h"
 
 namespace web {
