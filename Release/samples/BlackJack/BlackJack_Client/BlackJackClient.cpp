@@ -17,7 +17,11 @@
 #include "../BlackJack_Server/messagetypes.h"
 
 #ifdef _WIN32
+#ifdef _UTF16_STRINGS
+# define iequals(x, y) (_wcsicmp((x), (y))==0)
+#else
 # define iequals(x, y) (_stricmp((x), (y))==0)
+#endif
 #else
 # define iequals(x, y) boost::iequals((x), (y))
 #endif

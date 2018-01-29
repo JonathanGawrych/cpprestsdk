@@ -29,7 +29,7 @@
 #include "cpprest/details/SafeInt3.hpp"
 
 // TEMPORARY, REMOVE:
-#define _WIN32_USE_UTF8
+//#define _WIN32_USE_UTF8
 
 //
 // On POSIX platforms, all strings are narrow

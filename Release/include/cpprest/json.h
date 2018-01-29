@@ -1478,6 +1478,12 @@ public:
             {
                 format(str);
             }
+#ifdef _UTF16_STRINGS
+            virtual void serialize_impl(utf8string& str) const
+            {
+                format(str);
+            }
+#endif
 
             virtual utility::string_t to_string() const
             {
@@ -1510,6 +1516,9 @@ public:
 
             virtual void format(utility::string_t& stream) const = 0;
 
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& stream) const = 0;
+#endif
         private:
 
             friend class web::json::value;
@@ -1529,6 +1538,12 @@ public:
             {
                 stream.append(_XPLATSTR("null"));
             }
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& stream) const override
+            {
+                stream.append("null");
+            }
+#endif
         };
 
         class _Number : public _Value
@@ -1564,7 +1579,9 @@ public:
 
         protected:
             virtual void format(utility::string_t& stream) const override;
-
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& stream) const override;
+#endif
         private:
             template<typename CharType> friend class json::details::JSON_Parser;
 
@@ -1591,6 +1608,12 @@ public:
                 stream.append(m_value ? _XPLATSTR("true") : _XPLATSTR("false"));
             }
 
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& stream) const override
+            {
+                stream.append(m_value ? "true" : "false");
+            }
+#endif
         private:
             template<typename CharType> friend class json::details::JSON_Parser;
             bool m_value;
@@ -1633,9 +1656,18 @@ public:
             {
                  serialize_impl_char_type(str);
             }
+#ifdef _UTF16_STRINGS
+            virtual void serialize_impl(utf8string& str) const
+            {
+                serialize_impl_char_type(str);
+            }
+#endif
 
         protected:
             virtual void format(utility::string_t& str) const override;
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& str) const override;
+#endif
 
         private:
             friend class _Object;
@@ -1670,6 +1702,10 @@ public:
         _ASYNCRTIMP void append_escape_string(std::basic_string<CharType>& str, const std::basic_string<CharType>& escaped);
 
         void format_string(const utility::string_t& key, utility::string_t& str);
+
+#ifdef _UTF16_STRINGS
+        void format_string(const utility::string_t& key, std::string& str);
+#endif
 
         class _Object : public _Value
         {
@@ -1707,7 +1743,14 @@ public:
                 str.reserve(get_reserve_size());
                 format(str);
             }
-
+#ifdef _UTF16_STRINGS
+            virtual void serialize_impl(utf8string& str) const
+            {
+                // To avoid repeated allocations reserve some space all up front.
+                str.reserve(get_reserve_size());
+                format(str);
+            }
+#endif
             size_t size() const { return m_object.size(); }
 
         protected:
@@ -1715,6 +1758,12 @@ public:
             {
                 format_impl(str);
             }
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& str) const override
+            {
+                format_impl(str);
+            }
+#endif
 
         private:
             json::object m_object;
@@ -1816,7 +1865,14 @@ public:
                 str.reserve(get_reserve_size());
                 format(str);
             }
-
+#ifdef _UTF16_STRINGS
+            virtual void serialize_impl(utf8string& str) const
+            {
+                // To avoid repeated allocations reserve some space all up front.
+                str.reserve(get_reserve_size());
+                format(str);
+            }
+#endif
             size_t size() const { return m_array.size(); }
 
         protected:
@@ -1824,7 +1880,12 @@ public:
             {
                 format_impl(str);
             }
-
+#ifdef _UTF16_STRINGS
+            virtual void format(utf8string& str) const override
+            {
+                format_impl(str);
+            }
+#endif
         private:
             json::array m_array;
 
