@@ -39,7 +39,7 @@ pplx::task<void> facebook_client::login(utility::string_t scopes)
 		ApplicationDataCreateDisposition::Always);
 
 	if(ls->Values->HasKey("facebookToken")) {
-		std::wstring token = dynamic_cast<String^>(ls->Values->Lookup("facebookToken"))->Data();
+		utf16string tokenUtf16 = dynamic_cast<String^>(ls->Values->Lookup("facebookToken"))->Data();
 		token_ = utility::conversions::to_string_t(token);
 	}
 
@@ -76,7 +76,7 @@ pplx::task<void> facebook_client::login(utility::string_t scopes)
 	return full_login(scopes);
 }
 
-pplx::task<void> facebook_client::full_login(utility::string_t scopes) 
+pplx::task<void> facebook_client::full_login(utility::string_t scopes)
 {
 	// Create uri for OAuth login on Facebook
 	http::uri_builder login_uri(U("https://www.facebook.com/dialog/oauth"));
@@ -98,15 +98,15 @@ pplx::task<void> facebook_client::full_login(utility::string_t scopes)
 			auto start = response.find(L"access_token=");
 			start += 13;
 			auto end = response.find('&');
-			std::wstring token = response.substr(start, end-start);
+			std::wstring tokenUtf16 = response.substr(start, end-start);
 
-			token_ = utility::conversions::to_string_t(token);
+			token_ = utility::conversions::to_string_t(tokenUtf16);
 
 			// Add token to Local Settings for future login attempts
 			auto ls = ApplicationData::Current->LocalSettings->CreateContainer("LoginDetailsCache",
 				ApplicationDataCreateDisposition::Always);
 
-			ls->Values->Insert("facebookToken", ref new String(token.c_str()));
+			ls->Values->Insert("facebookToken", ref new String(tokenUtf16.c_str()));
 		}
 	});
 }

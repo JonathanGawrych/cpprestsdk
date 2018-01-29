@@ -17,7 +17,7 @@
 #include "../BlackJack_Server/messagetypes.h"
 
 #ifdef _WIN32
-# define iequals(x, y) (u_stricmp((x), (y))==0)
+# define iequals(x, y) (_stricmp((x), (y))==0)
 #else
 # define iequals(x, y) boost::iequals((x), (y))
 #endif
@@ -139,7 +139,11 @@ void PrintTable(const http_response &response, bool &refresh)
 // Arguments: BlackJack_Client.exe <port>
 // If port is not specified, client will assume that the server is listening on port 34568
 //
-int umain(int argc, char_t *argv[])
+#if defined(_WIN32) && defined(_UTF16_STRINGS)
+int wmain(int argc, wchar_t *argv[])
+#else
+int main(int argc, char *argv[])
+#endif
 {
     utility::string_t port = U("34568");
     if(argc == 2)

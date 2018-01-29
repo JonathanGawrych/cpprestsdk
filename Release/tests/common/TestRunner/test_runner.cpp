@@ -603,7 +603,7 @@ int main(int argc, char* argv[])
     failedTestCount += testRunner.GetTestResults()->GetFailedTestCount();
     if( totalTestCount == 0 )
     {
-        std::cout << "No tests were run. Check the command line syntax (try 'TestRunner.exe /help')" << std::endl;
+        std::cout << "No tests were run. Check the command line syntax (try 'TestRunner.exe /?')" << std::endl;
     }
     else
     {

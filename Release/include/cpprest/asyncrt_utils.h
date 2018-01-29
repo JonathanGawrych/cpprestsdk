@@ -430,7 +430,11 @@ namespace details
     inline bool str_icmp(const utility::string_t &left, const utility::string_t &right)
     {
 #ifdef _WIN32
-        return u_stricmp(left.c_str(), right.c_str()) == 0;
+#ifdef _UTF16_STRINGS
+        return _wcsicmp(left.c_str(), right.c_str()) == 0;
+#else
+        return _stricmp(left.c_str(), right.c_str()) == 0;
+#endif
 #else
         return boost::iequals(left, right);
 #endif

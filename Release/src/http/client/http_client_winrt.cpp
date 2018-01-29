@@ -161,7 +161,11 @@ public:
         if (m_request->m_exceptionPtr == nullptr)
         {
             utility::string_t msg(U("IXMLHttpRequest2Callback::OnError: "));
-            msg.append(uto_string(hrError));
+#ifdef _UTF16_STRINGS
+            msg.append(std::to_wstring(hrError));
+#else
+            msg.append(std::to_string(hrError));
+#endif
             msg.append(U(": "));
             msg.append(utility::conversions::to_string_t(utility::details::windows_category().message(hrError)));
             m_request->report_error(hrError, msg);

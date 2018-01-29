@@ -29,7 +29,11 @@ web::http::client::http_client_config client_config_for_proxy()
     char_t* pValue = nullptr;
     std::unique_ptr<char_t, void(*)(char_t*)> holder(nullptr, [](char_t* p) { free(p); });
     size_t len = 0;
-    auto err = u_dupenv_s(&pValue, &len, U("http_proxy"));
+#ifdef _UTF16_STRINGS
+    auto err = _wdupenv_s(&pValue, &len, U("http_proxy"));
+#else
+    auto err = _dupenv_s(&pValue, &len, U("http_proxy"));
+#endif
     if (pValue)
         holder.reset(pValue);
     if (!err && pValue && len) {
@@ -48,7 +52,11 @@ web::http::client::http_client_config client_config_for_proxy()
 }
 
 
-int umain(int argc, char_t *args[])
+#if defined (_WIN32) && defined(_UTF16_STRINGS)
+int wmain(int argc, wchar_t *args[])
+#else
+int main(int argc, char *args[])
+#endif
 {
     if(argc != 3)
     {

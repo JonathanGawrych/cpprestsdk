@@ -190,7 +190,7 @@ void parse_http_headers(const HTTP_REQUEST_HEADERS &headers, http::http_headers 
         // header value can be empty
         if(headers.pUnknownHeaders[i].RawValueLength > 0)
         {
-            msgHeaders.add(unknown_header_name, utility::conversions::to_string_t(headers.pUnknownHeaders[i].pRawValue));
+            msgHeaders.add(unknown_header_name, to_string_t(headers.pUnknownHeaders[i].pRawValue));
         }
         else
         {
@@ -201,7 +201,7 @@ void parse_http_headers(const HTTP_REQUEST_HEADERS &headers, http::http_headers 
     {
         if(headers.KnownHeaders[i].RawValueLength > 0)
         {
-            msgHeaders.add(HttpServerAPIKnownHeaders[i], utility::conversions::to_string_t(headers.KnownHeaders[i].pRawValue));
+            msgHeaders.add(HttpServerAPIKnownHeaders[i], to_string_t(headers.KnownHeaders[i].pRawValue));
         }
     }
 }

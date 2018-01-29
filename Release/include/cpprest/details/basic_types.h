@@ -29,7 +29,7 @@
 #include "cpprest/details/SafeInt3.hpp"
 
 // TEMPORARY, REMOVE:
-// #define _WIN32_USE_UTF8
+#define _WIN32_USE_UTF8
 
 //
 // On POSIX platforms, all strings are narrow
@@ -42,6 +42,11 @@
 typedef char utf8char;
 typedef std::string utf8string;
 typedef std::stringbuf utf8stringbuf;
+#ifdef _WIN32
+#define _XPLATUTF8STR(x) u8 ## x
+#else
+#define _XPLATUTF8STR(x) x
+#endif
 typedef std::stringstream utf8stringstream;
 typedef std::ostringstream utf8ostringstream;
 typedef std::ofstream utf8ofstream;
@@ -100,20 +105,6 @@ typedef utf16stringstream stringstream_t;
 #define ucout std::wcout
 #define ucin std::wcin
 #define ucerr std::wcerr
-#define uto_string std::to_wstring
-#define uprintf wprintf
-#ifdef _WIN32
-#define uatoi _wtoi
-#define ufopen_s _wfopen_s
-#define usscanf_s swscanf_s
-#define u_i64toa_s _i64tow_s
-#define u_ui64toa_s _ui64tow_s
-#define ustrnlen_s wcsnlen_s
-#define u_sprintf_s_l _swprintf_s_l
-#define u_stricmp _wcsicmp
-#define u_dupenv_s _wdupenv_s
-#define umain wmain
-#endif
 #else
 typedef utf8char char_t;
 typedef utf8string string_t;
@@ -129,20 +120,6 @@ typedef utf8stringstream stringstream_t;
 #define ucout std::cout
 #define ucin std::cin
 #define ucerr std::cerr
-#define uto_string std::to_string
-#define uprintf printf
-#define uatoi atoi
-#define ufopen_s fopen_s
-#ifdef _WIN32
-#define usscanf_s sscanf_s
-#define u_i64toa_s _i64toa_s
-#define u_ui64toa_s _ui64toa_s
-#define ustrnlen_s strnlen_s
-#define u_sprintf_s_l _sprintf_s_l
-#define u_stricmp _stricmp
-#define u_dupenv_s _dupenv_s
-#define umain main
-#endif
 #endif // endif _UTF16_STRINGS
 
 #ifndef _TURN_OFF_PLATFORM_STRING

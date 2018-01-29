@@ -128,7 +128,7 @@ void CasaLens::handle_post(http_request message)
     }
 }
 
-#ifdef _UTF16_STRINGS
+#if defined(_WIN32) && defined(_UTF16_STRINGS)
 int wmain(int argc, wchar_t *args[])
 #else
 int main(int argc, char *args[])
@@ -136,7 +136,7 @@ int main(int argc, char *args[])
 {
     if(argc != 2)
     {
-        uprintf(U("Usage: casalens.exe port\n"));
+        ucout << U("Usage: casalens.exe port") << std::endl;
         return -1;
     }
 

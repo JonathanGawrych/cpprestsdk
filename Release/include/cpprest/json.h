@@ -1474,16 +1474,10 @@ public:
             virtual const value &cnst_index(array::size_type) const { throw json_exception(_XPLATSTR("not an array")); }
 
             // Common function used for serialization to strings and streams.
-            virtual void serialize_impl(utf8string& str) const
+            virtual void serialize_impl(utility::string_t& str) const
             {
                 format(str);
             }
-#ifdef _UTF16_STRINGS
-            virtual void serialize_impl(utf16string& str) const
-            {
-                format(str);
-            }
-#endif
 
             virtual utility::string_t to_string() const
             {
@@ -1514,10 +1508,8 @@ public:
         protected:
             _Value() {}
 
-            virtual void format(utf8string& stream) const = 0;
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& stream) const = 0;
-#endif
+            virtual void format(utility::string_t& stream) const = 0;
+
         private:
 
             friend class web::json::value;
@@ -1533,16 +1525,10 @@ public:
             virtual json::value::value_type type() const { return json::value::Null; }
 
         protected:
-            virtual void format(utf8string& stream) const override
+            virtual void format(utility::string_t& stream) const override
             {
-                stream.append("null");
+                stream.append(_XPLATSTR("null"));
             }
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& stream) const override
-            {
-                stream.append(L"null");
-            }
-#endif
         };
 
         class _Number : public _Value
@@ -1577,10 +1563,8 @@ public:
             virtual const number& as_number() { return m_number; }
 
         protected:
-            virtual void format(utf8string& stream) const override;
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& stream) const override;
-#endif
+            virtual void format(utility::string_t& stream) const override;
+
         private:
             template<typename CharType> friend class json::details::JSON_Parser;
 
@@ -1602,17 +1586,11 @@ public:
             virtual bool as_bool() const { return m_value; }
 
         protected:
-            virtual void format(utf8string& stream) const override
+            virtual void format(utility::string_t& stream) const override
             {
-                stream.append(m_value ? "true" : "false");
+                stream.append(m_value ? _XPLATSTR("true") : _XPLATSTR("false"));
             }
 
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& stream) const override
-            {
-                stream.append(m_value ? L"true" : L"false");
-            }
-#endif
         private:
             template<typename CharType> friend class json::details::JSON_Parser;
             bool m_value;
@@ -1651,22 +1629,13 @@ public:
 
             virtual const utility::string_t & as_string() const;
 
-            virtual void serialize_impl(utf8string& str) const
+            virtual void serialize_impl(utility::string_t& str) const
             {
                  serialize_impl_char_type(str);
             }
-#ifdef _UTF16_STRINGS
-            virtual void serialize_impl(utf16string& str) const
-            {
-                serialize_impl_char_type(str);
-            }
-#endif
 
         protected:
-            virtual void format(utf8string& str) const override;
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& str) const override;
-#endif
+            virtual void format(utility::string_t& str) const override;
 
         private:
             friend class _Object;
@@ -1702,10 +1671,6 @@ public:
 
         void format_string(const utility::string_t& key, utility::string_t& str);
 
-#ifdef _UTF16_STRINGS
-        void format_string(const utility::string_t& key, std::string& str);
-#endif
-
         class _Object : public _Value
         {
         public:
@@ -1736,33 +1701,20 @@ public:
                 return std::equal(std::begin(m_object), std::end(m_object), std::begin(other->m_object));
             }
 
-            virtual void serialize_impl(utf8string& str) const
+            virtual void serialize_impl(utility::string_t& str) const
             {
                 // To avoid repeated allocations reserve some space all up front.
                 str.reserve(get_reserve_size());
                 format(str);
             }
-#ifdef _UTF16_STRINGS
-            virtual void serialize_impl(utf16string& str) const
-            {
-                // To avoid repeated allocations reserve some space all up front.
-                str.reserve(get_reserve_size());
-                format(str);
-            }
-#endif
+
             size_t size() const { return m_object.size(); }
 
         protected:
-            virtual void format(utf8string& str) const override
+            virtual void format(utility::string_t& str) const override
             {
                 format_impl(str);
             }
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& str) const override
-            {
-                format_impl(str);
-            }
-#endif
 
         private:
             json::object m_object;
@@ -1858,33 +1810,21 @@ public:
                 return true;
             }
 
-            virtual void serialize_impl(utf8string& str) const
+            virtual void serialize_impl(utility::string_t& str) const
             {
                 // To avoid repeated allocations reserve some space all up front.
                 str.reserve(get_reserve_size());
                 format(str);
             }
-#ifdef _UTF16_STRINGS
-            virtual void serialize_impl(utf16string& str) const
-            {
-                // To avoid repeated allocations reserve some space all up front.
-                str.reserve(get_reserve_size());
-                format(str);
-            }
-#endif
+
             size_t size() const { return m_array.size(); }
 
         protected:
-            virtual void format(utf8string& str) const override
+            virtual void format(utility::string_t& str) const override
             {
                 format_impl(str);
             }
-#ifdef _UTF16_STRINGS
-            virtual void format(utf16string& str) const override
-            {
-                format_impl(str);
-            }
-#endif
+
         private:
             json::array m_array;
 

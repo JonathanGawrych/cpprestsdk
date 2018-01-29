@@ -64,7 +64,11 @@ void on_shutdown()
 // BlackJack_Server.exe <port>
 // If port is not specified, will listen on 34568
 //
-int umain(int argc, char_t *argv[])
+#if defined(_WIN32) && defined(_UTF16_STRINGS)
+int wmain(int argc, wchar_t *argv[])
+#else
+int main(int argc, char *argv[])
+#endif
 {
     utility::string_t port = U("34568");
     if(argc == 2)

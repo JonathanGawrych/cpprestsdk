@@ -166,7 +166,11 @@ static pplx::task<void> write_matches_to_file(const string_t &fileName, matched_
     });
 }
 
-int umain(int argc, char_t *args[])
+#if defined(_WIN32) && defined(_UTF16_STRINGS)
+int wmain(int argc, wchar_t *args[])
+#else
+int main(int argc, char *args[])
+#endif
 {
     if(argc != 4)
     {

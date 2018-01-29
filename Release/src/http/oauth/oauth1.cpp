@@ -112,8 +112,8 @@ using namespace Windows::Storage::Streams;
 
 std::vector<unsigned char> oauth1_config::_hmac_sha1(const utility::string_t& key, const utility::string_t& data)
 {
-    Platform::String^ data_str = ref new Platform::String(utility::conversions::to_utf16string(data).c_str());
-    Platform::String^ key_str = ref new Platform::String(utility::conversions::to_utf16string(key).c_str());
+    Platform::String^ data_str = ref new Platform::String(conversions::to_utf16string(data).c_str());
+    Platform::String^ key_str = ref new Platform::String(conversions::to_utf16string(key).c_str());
 
     MacAlgorithmProvider^ HMACSha1Provider = MacAlgorithmProvider::OpenAlgorithm(MacAlgorithmNames::HmacSha1);
     IBuffer^ content_buffer = CryptographicBuffer::ConvertStringToBinary(data_str, BinaryStringEncoding::Utf8);

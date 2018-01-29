@@ -814,6 +814,14 @@ void extract_fractional_second(const utility::string_t& dateString, utility::str
     }
 }
 
+#ifdef _WIN32
+#ifdef _UTF16_STRINGS
+#define usscanf_s swscanf_s
+#else
+#define usscanf_s sscanf_s
+#endif
+#endif
+
 datetime __cdecl datetime::from_string(const utility::string_t& dateString, date_format format)
 {
     // avoid floating point math to preserve precision
